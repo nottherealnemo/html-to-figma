@@ -91,5 +91,7 @@ if failures:
     print(f'\n{len(failures)} failure(s):')
     for f in failures:
         print(' -', f)
+        if os.environ.get('GITHUB_ACTIONS'):  # also show as annotations on the GitHub run
+            print('::error title=Test failure::' + f.replace('%', '%25').replace('\r', '').replace('\n', '%0A')[:4000])
     sys.exit(1)
 print('\nAll tests passed.')
