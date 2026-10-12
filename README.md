@@ -142,5 +142,7 @@ scripts/build-release.sh          builds the installable zip into dist/
    They also run automatically on GitHub for every push.
 3. Bump the version in **both** `code.js` (`PLUGIN_VERSION`) and `mcp-server/html-to-figma-mcp.mjs` (`VERSION`),
    and add a `## x.y.z — date` entry to `CHANGELOG.md`.
-4. Commit, then tag and push: `git tag v1.6.2 && git push --tags`. GitHub builds the zip and publishes a release
-   with the changelog notes. Users update by downloading that zip and unzipping it over their folder.
+4. Commit and push. Then on GitHub: **Releases → Draft a new release**, create the tag (e.g. `v1.6.2`), paste the
+   changelog entry as notes, **Publish**. GitHub builds the installable zip and attaches it to the release within a
+   minute or two (it refuses if the tag doesn't match the version in `code.js`). Users update by downloading that zip
+   and unzipping it over their folder.

@@ -1,25 +1,26 @@
 name: Release
-# Push a tag like v1.6.2 to publish a release with the installable zip attached.
+# Publish a release on GitHub (Releases → Draft a new release → tag e.g. v1.6.2 → Publish).
+# This workflow then builds the installable zip and attaches it to that release.
 on:
-  push:
-    tags: ['v*']
+  release:
+    types: [published]
 permissions:
   contents: write
 jobs:
-  release:
+  attach-zip:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
       - name: Check tag matches the plugin version
         run: |
           V=$(sed -n "s/^const PLUGIN_VERSION = '\([0-9.]*\)'.*/\1/p" code.js)
-          [ "v$V" = "${GITHUB_REF_NAME}" ] || { echo "Tag ${GITHUB_REF_NAME} but code.js says $V"; exit 1; }
+          TAG="${{ github.event.release.tag_name }}"
+          [ "v$V" = "$TAG" ] || { echo "Release tag $TAG but code.js says $V"; exit 1; }
       - name: Build zip
         run: scripts/build-release.sh
-      - name: Publish release
+      - name: Attach zip to the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          V=${GITHUB_REF_NAME#v}
-          awk -v v="$V" '$0 ~ "^## "v" " {p=1; next} /^## / && p {exit} p' CHANGELOG.md > notes.md
-          gh release create "$GITHUB_REF_NAME" dist/*.zip --title "HTML to Figma $GITHUB_REF_NAME" --notes-file notes.md
+        run: gh release upload "${{ github.event.release.tag_name }}" dist/*.zip --clobber
