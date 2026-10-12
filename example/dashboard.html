@@ -1,0 +1,32 @@
+<!doctype html><html><head><style>
+body{margin:0;font:14px/20px Inter,sans-serif;background:#f1f5f9}
+.app{display:flex;height:640px}
+.side{width:220px;background:#0f172a;color:#cbd5e1;display:flex;flex-direction:column;gap:4px;padding:20px 12px}
+.side a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:inherit;text-decoration:none}
+.side a.on{background:#1e293b;color:#fff}
+.side .dot{width:8px;height:8px;border-radius:4px;background:#38bdf8}
+.side .spacer{flex:1}
+.main{flex:1;display:flex;flex-direction:column;gap:20px;padding:24px;position:relative}
+.top{display:flex;align-items:center;gap:12px}
+.top h2{margin:0;font-size:20px;flex-grow:1}
+.top input{flex:0 0 240px;height:36px;border:1px solid #cbd5e1;border-radius:8px;padding:0 12px}
+.btn{height:36px;padding:0 14px;border:0;border-radius:8px;background:#2563eb;color:#fff;font-weight:600}
+.tiles{display:flex;flex-wrap:wrap;gap:16px}
+.tile{width:200px;height:96px;background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.tile b{display:block;font-size:22px;margin-top:6px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.grid div{height:60px;background:#e0e7ff;border-radius:8px}
+.fab{position:absolute;right:24px;bottom:24px;width:48px;height:48px;border-radius:24px;background:#f43f5e}
+.row{display:flex;gap:8px}.row span{flex:1;height:40px;background:#fde68a;border-radius:6px}
+</style></head><body>
+<div class="app">
+  <nav class="side"><a class="on" href="#"><span class="dot"></span>Overview</a><a href="#"><span class="dot"></span>Deploys</a><a href="#"><span class="dot"></span>Settings</a><div class="spacer"></div><a href="#">Log out</a></nav>
+  <main class="main">
+    <div class="top"><h2>Dashboard</h2><input placeholder="Search…"><button class="btn">New project</button></div>
+    <div class="tiles"><div class="tile">Visitors<b>12,480</b></div><div class="tile">Builds<b>342</b></div><div class="tile">Errors<b>7</b></div><div class="tile">Uptime<b>99.98%</b></div><div class="tile">Regions<b>18</b></div></div>
+    <div class="grid"><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+    <div class="row"><span></span><span></span><span></span></div>
+    <div class="fab"></div>
+  </main>
+</div>
+</body></html>

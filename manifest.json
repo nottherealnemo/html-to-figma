@@ -1,0 +1,21 @@
+{
+  "name": "HTML to Figma Importer",
+  "id": "html-to-figma-importer-dev",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": [
+    "figma"
+  ],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": [
+      "*"
+    ],
+    "reasoning": "The imported HTML may reference images, web fonts and stylesheets hosted anywhere (CDNs, Google Fonts, image hosts), which must load to render the page faithfully. The plugin also connects to a local MCP server on localhost so Claude can request imports.",
+    "devAllowedDomains": [
+      "ws://localhost:3055",
+      "http://localhost:3055"
+    ]
+  }
+}

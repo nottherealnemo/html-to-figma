@@ -1,0 +1,19 @@
+<!doctype html><html><head><title>v1.6 test card</title><style>
+body{margin:0;background:#eef0f6;font-family:Inter,sans-serif;display:grid;place-items:center;min-height:100vh}
+.card{width:420px;background:#1f3bff;color:#fff;border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:18px}
+.head{display:flex;justify-content:space-between;align-items:flex-start}
+.title{font-size:20px;line-height:24px}
+.sub{display:flex;gap:14px;font-size:12px;color:#c3cbff;margin-top:6px}
+.chip{background:rgba(255,255,255,.18);border-radius:999px;padding:5px 12px;font-size:12px}
+.metric{display:flex;align-items:baseline;gap:6px}.big{font-size:64px;line-height:64px;font-weight:300}.unit{font-size:20px;opacity:.8}
+.row{display:flex;align-items:baseline;padding:10px 0;border-top:1px solid rgba(255,255,255,.18);font-size:13px}
+.row .v{margin-left:auto}.row .v .prev{opacity:.7}.row .v .now{font-size:20px;font-weight:300}
+</style></head><body>
+<div class="card">
+  <div class="head"><div><div class="title">Incoming data</div><div class="sub"><span>9600 bps</span><span>Body composition analyzer BC-01</span></div></div><span class="chip">COM3</span></div>
+  <div class="metric"><span class="big">72.6</span><span class="unit">kg</span></div>
+  <div>
+    <div class="row"><span>Weight</span><span class="v"><span class="prev">70.8 → </span><span class="now">+1.8</span> kg</span></div>
+    <div class="row"><span>Body fat</span><span class="v"><span class="prev">22.5 → </span><span class="now">+0.9</span> pt</span></div>
+  </div>
+</div></body></html>

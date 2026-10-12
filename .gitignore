@@ -1,0 +1,7 @@
+tests/out/
+__pycache__/
+*.pyc
+dist/
+*.zip
+*.before-html-to-figma
+.DS_Store

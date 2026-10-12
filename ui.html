@@ -1,0 +1,2171 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  :root {
+    --bg: var(--figma-color-bg, #ffffff);
+    --bg2: var(--figma-color-bg-secondary, #f5f5f5);
+    --text: var(--figma-color-text, #1e1e1e);
+    --text2: var(--figma-color-text-secondary, #6b6b6b);
+    --border: var(--figma-color-border, #e6e6e6);
+    --brand: var(--figma-color-bg-brand, #0d99ff);
+    --brand-text: var(--figma-color-text-onbrand, #ffffff);
+    --danger: var(--figma-color-text-danger, #dc3412);
+    --success: var(--figma-color-text-success, #14ae5c);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text);
+    font: 11px/16px Inter, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 12px; }
+  h1 { font-size: 13px; font-weight: 600; margin: 0; }
+  .sub { color: var(--text2); margin-top: 2px; }
+  .tabs { display: flex; gap: 2px; background: var(--bg2); padding: 2px; border-radius: 6px; }
+  .tabs button { flex: 1; border: 0; background: transparent; color: var(--text2); padding: 5px 0;
+    border-radius: 4px; font: inherit; cursor: pointer; }
+  .tabs button.on { background: var(--bg); color: var(--text); font-weight: 600;
+    box-shadow: 0 0 0 1px var(--border); }
+  .drop { border: 1px dashed var(--border); border-radius: 6px; padding: 14px 10px; text-align: center;
+    color: var(--text2); cursor: pointer; transition: border-color .15s, background .15s; }
+  .drop:hover, .drop.over { border-color: var(--brand); background: var(--bg2); }
+  .drop strong { color: var(--text); display: block; font-weight: 600; margin-bottom: 2px; word-break: break-all; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  label.lbl { color: var(--text2); }
+  input[type=text], input[type=number], select, textarea {
+    width: 100%; font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--border);
+    border-radius: 4px; padding: 5px 7px; outline: none; }
+  input:focus, select:focus, textarea:focus { border-color: var(--brand); }
+  textarea { height: 120px; resize: vertical; font-family: ui-monospace, Menlo, monospace; font-size: 10px; }
+  .ver { font-weight: 400; font-size: 10px; color: var(--text2); border: 1px solid var(--border); border-radius: 4px;
+    padding: 0 4px; margin-left: 4px; vertical-align: 1px; }
+  .pill.warn { color: var(--danger); border-color: currentColor; }
+  .pill.warn i { background: currentColor; opacity: 1; }
+  .headr { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .pill { cursor: pointer; }
+  .linkbtn { border: 0; background: none; color: var(--brand); font: inherit; font-size: 10px; padding: 0; cursor: pointer; }
+  .linkbtn:hover { text-decoration: underline; }
+  #connectView { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 12px; }
+  .bar { display: flex; align-items: center; gap: 8px; }
+  .back { border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 4px; font: inherit; padding: 2px 8px; cursor: pointer; }
+  .card { background: var(--bg2); border-radius: 6px; padding: 10px; }
+  .card strong { display: block; margin-bottom: 4px; }
+  .card p, .where, .extra { margin: 0; color: var(--text2); }
+  .where b, .card b { color: var(--text); font-weight: 600; }
+  .snip { position: relative; }
+  .snip pre { margin: 0; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 8px 8px 8px;
+    font: 10px/14px ui-monospace, Menlo, monospace; white-space: pre-wrap; word-break: break-all; max-height: 180px; overflow: auto; }
+  .snip button { position: absolute; top: 6px; right: 6px; border: 0; border-radius: 4px; background: var(--brand); color: var(--brand-text);
+    font: inherit; font-size: 10px; font-weight: 600; padding: 3px 8px; cursor: pointer; }
+  .field small { color: var(--text2); }
+  .connstatus { display: flex; align-items: center; gap: 6px; color: var(--text2); border-top: 1px solid var(--border); padding-top: 10px; }
+  .connstatus i { width: 8px; height: 8px; border-radius: 4px; background: var(--text2); opacity: .5; flex: none; }
+  .connstatus.on { color: var(--success); } .connstatus.on i { background: currentColor; opacity: 1; }
+  .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .pill { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; border: 1px solid var(--border);
+    border-radius: 10px; padding: 1px 8px; color: var(--text2); font-size: 10px; }
+  .pill i { width: 6px; height: 6px; border-radius: 3px; background: var(--text2); opacity: .5; }
+  .pill.on { color: var(--success); border-color: currentColor; }
+  .pill.on i { background: currentColor; opacity: 1; }
+  .pill.busy i { background: var(--brand); opacity: 1; }
+  .devices { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .device { border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 6px;
+    padding: 8px 2px 6px; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .device svg { width: 24px; height: 20px; stroke: var(--text2); fill: none; stroke-width: 1.5; }
+  .device span { font-weight: 600; }
+  .device small { color: var(--text2); font-size: 10px; line-height: 12px; }
+  .device.on { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); }
+  .device.on svg { stroke: var(--brand); }
+  .sizes { display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 6px 6px; align-items: center; }
+  .sizes span { color: var(--text2); }
+  .checks { display: flex; flex-direction: column; gap: 6px; }
+  .checks label { display: flex; gap: 6px; align-items: flex-start; cursor: pointer; }
+  .checks small { color: var(--text2); display: block; }
+  details summary { cursor: pointer; color: var(--text2); user-select: none; }
+  details[open] summary { margin-bottom: 8px; }
+  .go { border: 0; border-radius: 6px; background: var(--brand); color: var(--brand-text); font: inherit;
+    font-weight: 600; padding: 8px; cursor: pointer; }
+  .go:disabled { opacity: .45; cursor: default; }
+  #status { min-height: 16px; color: var(--text2); }
+  #status.err { color: var(--danger); }
+  #status.ok { color: var(--success); }
+  .hidden { display: none !important; }
+  #stage { position: fixed; left: 0; top: 0; border: 0; opacity: 0; pointer-events: none; z-index: -1; }
+</style>
+</head>
+<body>
+<iframe id="stage" title="render stage"></iframe>
+<main id="mainView">
+  <div class="head">
+    <div>
+      <h1>HTML → Figma <span class="ver" id="ver" title="Plugin version"></span></h1>
+      <div class="sub">Renders your HTML, then rebuilds it as editable frames, text, images and vectors.</div>
+    </div>
+    <div class="headr">
+      <span class="pill" id="bridgePill" title="Connection to your AI app" role="button" tabindex="0"><i></i><span>AI off</span></span>
+      <button class="linkbtn" id="openConnect">Connect AI app</button>
+    </div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="on" data-tab="file">File</button>
+    <button data-tab="folder">Folder</button>
+    <button data-tab="paste">Paste</button>
+  </div>
+
+  <div data-pane="file">
+    <div class="drop" id="dropFile">
+      <strong id="fileLabel">Choose or drop an .html file</strong>
+      <span>Add images / CSS alongside it to resolve relative paths</span>
+    </div>
+    <input type="file" id="fileInput" class="hidden" multiple
+      accept=".html,.htm,.css,.js,.png,.jpg,.jpeg,.gif,.webp,.svg,.avif,.woff,.woff2,.ttf,.otf">
+  </div>
+  <div data-pane="folder" class="hidden">
+    <div class="drop" id="dropFolder">
+      <strong id="folderLabel">Choose a site folder</strong>
+      <span>Relative images, stylesheets and fonts are resolved from it</span>
+    </div>
+    <input type="file" id="folderInput" class="hidden" webkitdirectory directory multiple>
+  </div>
+  <div data-pane="paste" class="hidden">
+    <textarea id="pasteInput" placeholder="<!DOCTYPE html>&#10;<html>…"></textarea>
+  </div>
+
+  <div class="field hidden" id="entryField">
+    <label class="lbl" for="entrySelect">Page to import</label>
+    <select id="entrySelect"></select>
+  </div>
+
+  <div class="field">
+    <label class="lbl">Import as <span style="opacity:.7">(pick one or more — one frame each)</span></label>
+    <div class="devices" id="devices">
+      <button class="device on" data-device="desktop" title="Desktop">
+        <svg viewBox="0 0 24 20"><rect x="1.5" y="1.5" width="21" height="13" rx="1.5"/><path d="M8 18.5h8M12 14.5v4"/></svg>
+        <span>Desktop</span><small data-dim="desktop">1440×900</small></button>
+      <button class="device" data-device="tablet" title="Tablet">
+        <svg viewBox="0 0 24 20"><rect x="5" y="1" width="14" height="18" rx="2"/><path d="M11 16.5h2"/></svg>
+        <span>Tablet</span><small data-dim="tablet">768×1024</small></button>
+      <button class="device" data-device="mobile" title="Mobile">
+        <svg viewBox="0 0 24 20"><rect x="7.5" y="1" width="9" height="18" rx="2"/><path d="M11 16.5h2"/></svg>
+        <span>Mobile</span><small data-dim="mobile">390×844</small></button>
+      <button class="device" data-device="canvas" title="Canvas: frame sized to the page's own content">
+        <svg viewBox="0 0 24 20"><path d="M2 6V2h4M18 2h4v4M22 14v4h-4M6 18H2v-4"/><rect x="7" y="6" width="10" height="8" rx="1"/></svg>
+        <span>Canvas</span><small>Fit content</small></button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="lbl" for="optAL">Auto Layout</label>
+    <select id="optAL">
+      <option value="flex" selected>Flexbox &amp; grid containers</option>
+      <option value="all">Flexbox, grid &amp; stacked blocks</option>
+      <option value="off">Off (absolute positions)</option>
+    </select>
+  </div>
+
+  <details>
+    <summary>Options</summary>
+    <div class="checks">
+      <label><input type="checkbox" id="optScripts" checked>
+        <span>Run JavaScript<small>Needed for pages built by scripts (Tailwind CDN, React…)</small></span></label>
+      <label><input type="checkbox" id="optFlatten" checked>
+        <span>Remove empty wrappers<small>Skip divs with no fill, border or clipping</small></span></label>
+      <label><input type="checkbox" id="optAnim" checked>
+        <span>Freeze animations<small>Capture elements in their resting state</small></span></label>
+      <div class="field">
+        <label class="lbl" for="optText">Text layers</label>
+        <select id="optText">
+          <option value="paragraph">One layer per paragraph (editable)</option>
+          <option value="lines">One layer per line (pixel-exact)</option>
+        </select>
+      </div>
+      <label><input type="checkbox" id="optCrop">
+        <span>Crop to one screen<small>Desktop/Tablet/Mobile frames use the screen height; the rest of the page is clipped, not removed</small></span></label>
+      <div class="field">
+        <label class="lbl">Screen sizes (width × height)</label>
+        <div class="sizes">
+          <span>Desktop</span><input type="number" id="szDesktopW" value="1440" min="120" max="8000"><span>×</span><input type="number" id="szDesktopH" value="900" min="100">
+          <span>Tablet</span><input type="number" id="szTabletW" value="768" min="120" max="8000"><span>×</span><input type="number" id="szTabletH" value="1024" min="100">
+          <span>Mobile</span><input type="number" id="szMobileW" value="390" min="120" max="8000"><span>×</span><input type="number" id="szMobileH" value="844" min="100">
+        </div>
+      </div>
+      <div class="field">
+        <label class="lbl" for="optWait">Wait after load (ms)</label>
+        <input type="number" id="optWait" value="400" min="0" step="100">
+      </div>
+      <div class="field">
+        <label class="lbl" for="optBase">Base URL for relative links (optional)</label>
+        <input type="text" id="optBase" placeholder="https://example.com/">
+      </div>
+      <label><input type="checkbox" id="optBridge" checked>
+        <span>Let AI apps import (MCP)<small>Lets Claude, ChatGPT, Cursor and other connected AI apps send HTML to this plugin while it's open</small></span></label>
+      <div class="field">
+        <label class="lbl" for="optPort">MCP bridge port</label>
+        <input type="number" id="optPort" value="3055" min="1024" max="65535">
+      </div>
+    </div>
+  </details>
+
+  <button class="go" id="go" disabled>Import to Figma</button>
+  <div id="status"></div>
+</main>
+
+<section id="connectView" class="hidden">
+  <div class="bar"><button class="back" id="connBack">‹ Back</button><h1>Connect an AI app</h1></div>
+  <div class="card">
+    <strong>Easiest: run the installer</strong>
+    <p>Open the plugin folder and double-click <b>Install - Mac</b> or <b>Install - Windows</b>. It finds Claude, ChatGPT,
+      Cursor, VS Code and other AI apps on this computer and connects them all. Then restart those apps.</p>
+  </div>
+  <div class="field">
+    <label class="lbl" for="connApp">Or set up one app by hand</label>
+    <select id="connApp">
+      <option value="claude-desktop">Claude Desktop</option>
+      <option value="claude-code">Claude Code</option>
+      <option value="chatgpt">ChatGPT desktop / Codex</option>
+      <option value="cursor">Cursor</option>
+      <option value="vscode">VS Code (Copilot)</option>
+      <option value="windsurf">Windsurf</option>
+      <option value="gemini">Gemini CLI</option>
+      <option value="lmstudio">LM Studio</option>
+      <option value="other">Another app</option>
+    </select>
+  </div>
+  <p class="where" id="connWhere"></p>
+  <div class="snip"><pre id="connSnippet"></pre><button id="connCopy">Copy</button></div>
+  <p class="extra" id="connExtra"></p>
+  <div class="field">
+    <label class="lbl" for="connServerPath">Where html-to-figma-mcp.mjs is on this computer</label>
+    <input type="text" id="connServerPath" placeholder="…/html-to-figma/mcp-server/html-to-figma-mcp.mjs">
+    <small id="connPathHint"></small>
+  </div>
+  <input type="hidden" id="connNodePath">
+  <div class="connstatus" id="connStatus"><i></i><span></span></div>
+</section>
+
+<script id="h2f-extractor">
+/* =====================================================================
+ *  Extractor: render HTML in a hidden iframe, walk the DOM, and produce
+ *  a plain-JSON layer tree the main thread turns into Figma nodes.
+ * ===================================================================== */
+const Extractor = (() => {
+  const SKIP = new Set(['script', 'style', 'link', 'meta', 'head', 'title', 'noscript', 'template', 'base', 'datalist', 'option', 'optgroup', 'param', 'source', 'track', 'area', 'map']);
+  const NOT_INLINE = new Set(['img', 'svg', 'video', 'canvas', 'iframe', 'input', 'textarea', 'select', 'object', 'embed', 'picture', 'button', 'audio', 'math', 'progress', 'meter']);
+
+  /* ---------- colors ---------- */
+  const colorCache = new Map();
+  let colorCtx = null;
+  function parseColor(str) {
+    if (!str) return null;
+    str = str.trim();
+    if (colorCache.has(str)) return colorCache.get(str);
+    let out = null;
+    const m = str.match(/^rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)$/i);
+    if (m) {
+      let a = m[4] === undefined ? 1 : m[4].endsWith('%') ? parseFloat(m[4]) / 100 : parseFloat(m[4]);
+      out = { r: +m[1] / 255, g: +m[2] / 255, b: +m[3] / 255, a };
+    } else if (str === 'transparent') {
+      out = { r: 0, g: 0, b: 0, a: 0 };
+    } else {
+      // Modern color spaces (oklch, lab, color(), color-mix…): let the browser convert to sRGB.
+      if (!colorCtx) {
+        const c = document.createElement('canvas'); c.width = c.height = 1;
+        colorCtx = c.getContext('2d', { willReadFrequently: true });
+      }
+      colorCtx.clearRect(0, 0, 1, 1);
+      colorCtx.fillStyle = '#000';
+      colorCtx.fillStyle = str;
+      colorCtx.fillRect(0, 0, 1, 1);
+      const d = colorCtx.getImageData(0, 0, 1, 1).data;
+      out = { r: d[0] / 255, g: d[1] / 255, b: d[2] / 255, a: d[3] / 255 };
+    }
+    colorCache.set(str, out);
+    return out;
+  }
+  const cssRgba = (c) => `rgba(${Math.round(c.r * 255)}, ${Math.round(c.g * 255)}, ${Math.round(c.b * 255)}, ${+c.a.toFixed(3)})`;
+
+  /* ---------- small parsers ---------- */
+  function splitTop(str, sep = ',') {
+    const out = []; let depth = 0, cur = '', quote = null;
+    for (const ch of str) {
+      if (quote) { cur += ch; if (ch === quote) quote = null; continue; }
+      if (ch === '"' || ch === "'") { quote = ch; cur += ch; continue; }
+      if (ch === '(') depth++;
+      else if (ch === ')') depth--;
+      if (depth === 0 && (sep === ' ' ? /\s/.test(ch) : ch === sep)) {
+        if (cur.trim()) out.push(cur.trim()); cur = ''; continue;
+      }
+      cur += ch;
+    }
+    if (cur.trim()) out.push(cur.trim());
+    return out;
+  }
+  const px = (v) => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+  const COLOR_START = /^(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color|color-mix|#|transparent|currentcolor|light-dark)/i;
+
+  function parseAngle(tok, w, h) {
+    tok = tok.trim();
+    let m;
+    if ((m = tok.match(/^(-?[\d.]+)(deg|turn|rad|grad)$/))) {
+      const v = parseFloat(m[1]);
+      return m[2] === 'deg' ? v : m[2] === 'turn' ? v * 360 : m[2] === 'rad' ? v * 180 / Math.PI : v * 0.9;
+    }
+    if (tok.startsWith('to ')) {
+      const t = tok.slice(3).split(/\s+/).sort().join(' ');
+      const diag = Math.atan2(h, w) * 180 / Math.PI;
+      const map = {
+        'top': 0, 'right': 90, 'bottom': 180, 'left': 270,
+        'right top': diag, 'bottom right': 180 - diag, 'bottom left': 180 + diag, 'left top': 360 - diag,
+      };
+      if (t in map) return map[t];
+    }
+    return null;
+  }
+
+  function parseStops(args, lengthPx) {
+    const stops = [];
+    for (const a of args) {
+      const toks = splitTop(a, ' ');
+      if (!toks.length) continue;
+      const colorTok = toks.find((t) => COLOR_START.test(t)) || (toks.length === 1 && !/\d/.test(toks[0]) ? toks[0] : null);
+      if (!colorTok) continue; // interpolation hint
+      const color = parseColor(colorTok);
+      if (!color) continue;
+      const poss = toks.filter((t) => t !== colorTok).map((t) =>
+        t.endsWith('%') ? parseFloat(t) / 100 : lengthPx ? px(t) / lengthPx : null).filter((v) => v !== null && isFinite(v));
+      if (!poss.length) stops.push({ color, position: null });
+      else for (const p of poss) stops.push({ color, position: p });
+    }
+    if (!stops.length) return null;
+    if (stops[0].position === null) stops[0].position = 0;
+    if (stops[stops.length - 1].position === null) stops[stops.length - 1].position = 1;
+    // Fill missing positions by interpolation; enforce monotonic order.
+    for (let i = 1; i < stops.length; i++) {
+      if (stops[i].position !== null) { stops[i].position = Math.max(stops[i].position, stops[i - 1].position); continue; }
+      let j = i; while (stops[j].position === null) j++;
+      const a = stops[i - 1].position, b = stops[j].position;
+      for (let k = i; k < j; k++) stops[k].position = a + (b - a) * (k - i + 1) / (j - i + 1);
+    }
+    for (const s of stops) s.position = Math.min(1, Math.max(0, s.position));
+    // Avoid gray fringes: transparent stops borrow their neighbour's hue (CSS interpolates premultiplied).
+    stops.forEach((s, i) => {
+      if (s.color.a === 0) {
+        const n = stops[i + 1] && stops[i + 1].color.a > 0 ? stops[i + 1] : stops[i - 1];
+        if (n) s.color = { ...n.color, a: 0 };
+      }
+    });
+    return stops;
+  }
+
+  function parseBackgroundLayers(cs, w, h) {
+    const img = cs.backgroundImage;
+    if (!img || img === 'none') return [];
+    const sizes = splitTop(cs.backgroundSize || 'auto');
+    const repeats = splitTop(cs.backgroundRepeat || 'repeat');
+    const layers = splitTop(img);
+    const out = [];
+    layers.forEach((layer, i) => {
+      let m;
+      if ((m = layer.match(/^url\((['"]?)(.*)\1\)$/s))) {
+        const size = sizes[i % sizes.length] || 'auto';
+        const repeat = repeats[i % repeats.length] || 'repeat';
+        let scaleMode = 'FILL';
+        if (size === 'contain') scaleMode = 'FIT';
+        else if (size === 'cover' || size.startsWith('100%')) scaleMode = 'FILL';
+        else if (/repeat(?!-)|round|space/.test(repeat) && !/no-repeat/.test(repeat)) scaleMode = 'TILE';
+        out.push({ type: 'IMAGE', url: m[2], scaleMode });
+        return;
+      }
+      if ((m = layer.match(/^(repeating-)?(linear|radial|conic)-gradient\((.*)\)$/s))) {
+        const kind = m[2];
+        const args = splitTop(m[3]);
+        if (kind === 'linear') {
+          let angle = 180;
+          if (args.length && !COLOR_START.test(args[0])) {
+            const a = parseAngle(args[0], w, h);
+            if (a !== null) { angle = a; args.shift(); }
+          }
+          const r = angle * Math.PI / 180;
+          const L = Math.abs(w * Math.sin(r)) + Math.abs(h * Math.cos(r));
+          const stops = parseStops(args, L);
+          if (stops) out.push({ type: 'GRADIENT_LINEAR', angle, stops });
+        } else {
+          if (args.length && !COLOR_START.test(args[0])) args.shift();
+          const stops = parseStops(args, Math.max(w, h) / 2);
+          if (stops) out.push({ type: kind === 'radial' ? 'GRADIENT_RADIAL' : 'GRADIENT_ANGULAR', stops });
+        }
+      }
+    });
+    return out.reverse(); // CSS lists topmost first; Figma paints the last fill on top
+  }
+
+  function parseShadows(str) {
+    if (!str || str === 'none') return [];
+    const out = [];
+    for (const part of splitTop(str)) {
+      const toks = splitTop(part, ' ');
+      const inset = toks.includes('inset');
+      const colorTok = toks.find((t) => COLOR_START.test(t));
+      const nums = toks.filter((t) => t !== 'inset' && t !== colorTok).map(px);
+      const color = parseColor(colorTok || 'rgba(0,0,0,1)');
+      if (!color || color.a === 0) continue;
+      const [x = 0, y = 0, blur = 0, spread = 0] = nums;
+      if (!x && !y && !blur && !spread) continue;
+      out.push({ type: inset ? 'INNER_SHADOW' : 'DROP_SHADOW', color, x, y, blur, spread });
+    }
+    return out.reverse();
+  }
+
+  function parseRadius(v, w, h) {
+    const first = (v || '0').split(/\s+/)[0];
+    if (first.endsWith('%')) return Math.min(w, h) * parseFloat(first) / 100;
+    return Math.min(px(first), Math.min(w, h) / 2);
+  }
+
+  function filterBlur(v) {
+    const m = v && v !== 'none' && v.match(/blur\(([\d.]+)px\)/);
+    return m ? parseFloat(m[1]) : 0;
+  }
+
+  /* ---------- extraction context ---------- */
+  function createContext(win, opts) {
+    const doc = win.document;
+    const csCache = new WeakMap();
+    const cs = (el) => { let s = csCache.get(el); if (!s) { s = win.getComputedStyle(el); csCache.set(el, s); } return s; };
+    return {
+      win, doc, opts, cs,
+      inlineCache: new WeakMap(),
+      styleCache: new WeakMap(),
+      decoCache: new WeakMap(),
+      assets: new Map(), // url -> { uses: [{ node, kind }] }
+      stats: { nodes: 0, texts: 0, images: 0 },
+    };
+  }
+
+  function useAsset(ctx, url, node, kind, extra) {
+    if (!ctx.assets.has(url)) ctx.assets.set(url, { uses: [] });
+    ctx.assets.get(url).uses.push({ node, kind, ...extra });
+  }
+
+  function nameOf(el) {
+    let n = el.localName;
+    if (el.id) n += '#' + el.id;
+    else if (typeof el.className === 'string' && el.className.trim()) n += '.' + el.className.trim().split(/\s+/)[0];
+    const label = el.getAttribute && (el.getAttribute('aria-label') || el.getAttribute('alt') || el.getAttribute('title'));
+    if (label) n += ` "${label.slice(0, 30)}"`;
+    return n;
+  }
+
+  function visualsOf(ctx, el, s, w, h, skipBg) {
+    const v = { fills: [], strokes: null, effects: [], radius: null, clip: false, opacity: 1 };
+    if (!skipBg && s.backgroundClip !== 'text' && s.webkitBackgroundClip !== 'text') {
+      const bg = parseColor(s.backgroundColor);
+      if (bg && bg.a > 0) v.fills.push({ type: 'SOLID', color: bg });
+      for (const layer of parseBackgroundLayers(s, w, h)) v.fills.push(layer);
+    }
+    const sides = ['Top', 'Right', 'Bottom', 'Left'];
+    const widths = sides.map((sd) => {
+      const st = s['border' + sd + 'Style'];
+      const c = parseColor(s['border' + sd + 'Color']);
+      return st === 'none' || st === 'hidden' || !c || c.a === 0 ? 0 : px(s['border' + sd + 'Width']);
+    });
+    if (widths.some((x) => x > 0)) {
+      const idx = widths.indexOf(Math.max(...widths));
+      v.strokes = {
+        color: parseColor(s['border' + sides[idx] + 'Color']),
+        top: widths[0], right: widths[1], bottom: widths[2], left: widths[3],
+        style: s['border' + sides[idx] + 'Style'],
+      };
+    }
+    const r = [
+      parseRadius(s.borderTopLeftRadius, w, h), parseRadius(s.borderTopRightRadius, w, h),
+      parseRadius(s.borderBottomRightRadius, w, h), parseRadius(s.borderBottomLeftRadius, w, h),
+    ];
+    if (r.some((x) => x > 0)) v.radius = r;
+    v.effects = parseShadows(s.boxShadow);
+    const blur = filterBlur(s.filter);
+    if (blur) v.effects.push({ type: 'LAYER_BLUR', radius: blur * 2 });
+    const bblur = filterBlur(s.backdropFilter || s.webkitBackdropFilter);
+    if (bblur) v.effects.push({ type: 'BACKGROUND_BLUR', radius: bblur * 2 });
+    v.clip = s.overflowX !== 'visible' || s.overflowY !== 'visible';
+    v.opacity = parseFloat(s.opacity);
+    return v;
+  }
+
+  const hasPaint = (v) => v.fills.length || v.strokes || v.effects.length;
+
+  function boxVisible(ctx, el, s) {
+    const bg = parseColor(s.backgroundColor);
+    if (bg && bg.a > 0) return true;
+    if (s.backgroundImage !== 'none' && s.backgroundClip !== 'text' && s.webkitBackgroundClip !== 'text') return true;
+    if (['Top', 'Right', 'Bottom', 'Left'].some((sd) => px(s['border' + sd + 'Width']) > 0 && s['border' + sd + 'Style'] !== 'none')) return true;
+    if (parseShadows(s.boxShadow).length) return true;
+    return false;
+  }
+
+  /** Is this element "just text" that can merge into its parent's text layer? */
+  function isPureInline(ctx, el) {
+    if (ctx.inlineCache.has(el)) return ctx.inlineCache.get(el);
+    let res = true;
+    const tag = el.localName;
+    if (tag === 'br' || tag === 'wbr') res = true;
+    else if (NOT_INLINE.has(tag) || SKIP.has(tag)) res = SKIP.has(tag);
+    else {
+      const s = ctx.cs(el);
+      if (s.display === 'none') res = true;
+      else if (s.display !== 'inline' && s.display !== 'contents') res = false;
+      else if (s.position === 'absolute' || s.position === 'fixed') res = false;
+      else if (parseFloat(s.opacity) < 1 && boxVisible(ctx, el, s)) res = false; // text-only opacity folds into the colour
+      else if (boxVisible(ctx, el, s)) res = false;
+      else for (const c of el.children) if (!isPureInline(ctx, c)) { res = false; break; }
+    }
+    ctx.inlineCache.set(el, res);
+    return res;
+  }
+
+  /* ---------- text ---------- */
+  function decorationOf(ctx, el) {
+    if (!el || el.nodeType !== 1) return 'NONE';
+    if (ctx.decoCache.has(el)) return ctx.decoCache.get(el);
+    const line = ctx.cs(el).textDecorationLine || '';
+    let d = line.includes('underline') ? 'UNDERLINE' : line.includes('line-through') ? 'STRIKETHROUGH' : null;
+    if (!d) d = el.localName === 'body' ? 'NONE' : decorationOf(ctx, el.parentElement);
+    ctx.decoCache.set(el, d);
+    return d;
+  }
+
+  function textPaintOf(ctx, el, s, w, h) {
+    // Gradient text: background-clip: text with a transparent fill colour.
+    let a = el;
+    for (let i = 0; a && i < 6; i++, a = a.parentElement) {
+      const as = ctx.cs(a);
+      if (as.backgroundClip === 'text' || as.webkitBackgroundClip === 'text') {
+        const layers = parseBackgroundLayers(as, w || 100, h || 20).filter((l) => l.type !== 'IMAGE');
+        if (layers.length) return layers[layers.length - 1];
+        break;
+      }
+    }
+    const fillColor = s.webkitTextFillColor && s.webkitTextFillColor !== s.color ? s.webkitTextFillColor : s.color;
+    const c = { ...(parseColor(fillColor) || { r: 0, g: 0, b: 0, a: 1 }) };
+    // Opacity on inline text (e.g. <span style="opacity:.7">) becomes a lighter text colour.
+    for (let a = el; a && ctx.cs(a).display === 'inline'; a = a.parentElement) c.a *= parseFloat(ctx.cs(a).opacity);
+    return { type: 'SOLID', color: c };
+  }
+
+  function textStyleOf(ctx, el) {
+    if (ctx.styleCache.has(el)) return ctx.styleCache.get(el);
+    const s = ctx.cs(el);
+    const families = splitTop(s.fontFamily).map((f) => f.replace(/^['"]|['"]$/g, '').trim()).filter(Boolean);
+    const lh = s.lineHeight === 'normal' ? null : px(s.lineHeight);
+    const ls = s.letterSpacing === 'normal' ? 0 : px(s.letterSpacing);
+    const tt = s.textTransform;
+    const a = el.closest('a[href]');
+    const style = {
+      families,
+      weight: parseInt(s.fontWeight, 10) || 400,
+      italic: s.fontStyle === 'italic' || s.fontStyle.startsWith('oblique'),
+      size: px(s.fontSize),
+      lineHeight: lh,
+      letterSpacing: ls,
+      fill: textPaintOf(ctx, el, s),
+      decoration: decorationOf(ctx, el),
+      textCase: tt === 'uppercase' ? 'UPPER' : tt === 'lowercase' ? 'LOWER' : tt === 'capitalize' ? 'TITLE' : 'ORIGINAL',
+      href: a && /^https?:/.test(a.href) ? a.href : null,
+    };
+    ctx.styleCache.set(el, style);
+    return style;
+  }
+
+  function visibleTextNodes(ctx, nodes) {
+    const out = [];
+    const visit = (n) => {
+      if (n.nodeType === 3) {
+        const p = n.parentElement;
+        if (p && ctx.cs(p).visibility === 'visible') out.push(n);
+      } else if (n.nodeType === 1) {
+        if (n.localName === 'br') { out.push(n); return; }
+        if (SKIP.has(n.localName) || ctx.cs(n).display === 'none') return;
+        for (const c of n.childNodes) visit(c);
+      }
+    };
+    nodes.forEach(visit);
+    return out;
+  }
+
+  /** Collapse whitespace like CSS and merge consecutive pieces with identical style. */
+  function buildSegments(ctx, pieces) {
+    const segs = [];
+    let prevSpace = true;
+    for (const p of pieces) {
+      const el = p.br ? p.node.parentElement || p.node : p.node.parentElement;
+      const s = ctx.cs(p.br ? p.node : el);
+      const style = textStyleOf(ctx, p.br ? (p.node.parentElement || p.node) : el);
+      let t;
+      if (p.br) { t = '\n'; prevSpace = true; }
+      else {
+        t = p.text.replace(/­/g, '');
+        const ws = s.whiteSpace || 'normal';
+        const collapse = !/^pre|break-spaces/.test(ws) && !/preserve/.test(s.whiteSpaceCollapse || '');
+        if (collapse) {
+          t = ws === 'pre-line' ? t.replace(/[\t ]+/g, ' ').replace(/ ?\n ?/g, '\n') : t.replace(/[\t\n\r\f ]+/g, ' ');
+          if (prevSpace && t.startsWith(' ')) t = t.slice(1);
+        }
+        if (!t) continue;
+        prevSpace = /[ \n]$/.test(t);
+      }
+      const key = JSON.stringify(style);
+      const last = segs[segs.length - 1];
+      if (last && last.key === key) last.text += t;
+      else segs.push({ key, text: t, style });
+    }
+    // Trim trailing collapsible space and spaces around hard breaks.
+    for (let i = segs.length - 1; i >= 0; i--) {
+      segs[i].text = segs[i].text.replace(/ +$/, '');
+      if (segs[i].text) break;
+    }
+    for (const sg of segs) sg.text = sg.text.replace(/ +\n/g, '\n');
+    return segs.filter((sg) => sg.text.length).map(({ text, style }) => ({ text, style }));
+  }
+
+  function groupLines(rects) {
+    const lines = [];
+    for (const r of rects) {
+      const mid = (r.top + r.bottom) / 2;
+      let line = lines.find((l) => mid >= l.top && mid <= l.bottom);
+      if (!line) { line = { top: r.top, bottom: r.bottom, left: r.left, right: r.right }; lines.push(line); }
+      else {
+        line.top = Math.min(line.top, r.top); line.bottom = Math.max(line.bottom, r.bottom);
+        line.left = Math.min(line.left, r.left); line.right = Math.max(line.right, r.right);
+      }
+    }
+    return lines.sort((a, b) => a.top - b.top);
+  }
+
+  function contentBox(ctx, el) {
+    const s = ctx.cs(el);
+    const r = el.getBoundingClientRect();
+    const l = r.left + px(s.borderLeftWidth) + px(s.paddingLeft);
+    const t = r.top + px(s.borderTopWidth) + px(s.paddingTop);
+    const w = r.width - px(s.borderLeftWidth) - px(s.borderRightWidth) - px(s.paddingLeft) - px(s.paddingRight)
+      - (el.scrollHeight > el.clientHeight && s.overflowY !== 'visible' ? el.offsetWidth - el.clientWidth - px(s.borderLeftWidth) - px(s.borderRightWidth) : 0);
+    const h = r.height - px(s.borderTopWidth) - px(s.borderBottomWidth) - px(s.paddingTop) - px(s.paddingBottom);
+    return { x: l, y: t, w: Math.max(0, w), h: Math.max(0, h) };
+  }
+
+  const ALIGN = { left: 'LEFT', start: 'LEFT', right: 'RIGHT', end: 'RIGHT', center: 'CENTER', justify: 'JUSTIFIED', '-webkit-center': 'CENTER' };
+
+  function textNode(segments, x, y, w, h, extra) {
+    return { type: 'text', x, y, w, h, segments, ...extra };
+  }
+
+  /** Correct y so Figma's line box (which uses line-height) lines up with the glyph box Chrome reports. */
+  function leadingOffset(style, glyphH) {
+    if (style.lineHeight == null) return 0;
+    return (style.lineHeight - glyphH) / 2;
+  }
+
+  function emitRun(ctx, nodes, container, out, key) {
+    const tnodes = visibleTextNodes(ctx, nodes);
+    if (!tnodes.some((n) => n.nodeType === 3 && /\S/.test(n.data))) return;
+    const doc = ctx.doc;
+    const range = doc.createRange();
+    const rects = [];
+    for (const n of tnodes) {
+      if (n.nodeType !== 3) continue;
+      range.selectNodeContents(n);
+      for (const r of range.getClientRects()) if (r.width > 0 && r.height > 0) rects.push(r);
+    }
+    if (!rects.length) return;
+    const lines = groupLines(rects);
+    const cStyle = ctx.cs(container);
+    const align = ALIGN[cStyle.textAlign] || 'LEFT';
+    const cb = contentBox(ctx, container);
+    const isFlow = /^(block|list-item|inline-block|table-cell|flow-root|table-caption)$/.test(cStyle.display);
+    const midStart = lines.length > 1 && (align === 'LEFT' || align === 'JUSTIFIED') && lines[0].left > cb.x + 2;
+
+    if (ctx.opts.textMode === 'lines' || midStart || (lines.length > 1 && !isFlow)) {
+      emitLines(ctx, tnodes, lines, out, key);
+      return;
+    }
+    const pieces = tnodes.map((n) => n.nodeType === 3 ? { node: n, text: n.data } : { node: n, br: true });
+    const segments = buildSegments(ctx, pieces);
+    if (!segments.length) return;
+    const base = segments[0].style;
+    const firstH = lines[0].bottom - lines[0].top;
+    const lead = leadingOffset(base, Math.min(firstH, base.size * 1.4));
+    const top = lines[0].top - lead;
+    const bottom = lines[lines.length - 1].bottom + lead;
+    ctx.stats.texts++;
+    if (lines.length === 1 && !segments.some((s) => s.text.includes('\n'))) {
+      out.push(withKey(textNode(segments, lines[0].left, top, lines[0].right - lines[0].left, bottom - top,
+        { autoWidth: true, align: 'LEFT', lines: 1 }), key));
+    } else {
+      out.push(withKey(textNode(segments, cb.x, top, cb.w, bottom - top, { autoWidth: false, align, lines: lines.length }), key));
+    }
+  }
+
+  function emitLines(ctx, tnodes, lines, out, key) {
+    const range = ctx.doc.createRange();
+    const perLine = lines.map(() => []);
+    let current = 0;
+    for (const n of tnodes) {
+      if (n.nodeType !== 3) continue; // <br> is implied by the line split
+      const re = /\S+\s*|\s+/g; let m;
+      while ((m = re.exec(n.data))) {
+        range.setStart(n, m.index); range.setEnd(n, m.index + m[0].length);
+        const r = [...range.getClientRects()].find((q) => q.width > 0 && q.height > 0);
+        if (r) {
+          const mid = (r.top + r.bottom) / 2;
+          const idx = lines.findIndex((l) => mid >= l.top && mid <= l.bottom);
+          if (idx >= 0) current = idx;
+        }
+        perLine[current].push({ node: n, text: m[0] });
+      }
+    }
+    lines.forEach((line, i) => {
+      const segments = buildSegments(ctx, perLine[i]);
+      if (!segments.length) return;
+      const base = segments[0].style;
+      const gh = line.bottom - line.top;
+      const lead = leadingOffset(base, Math.min(gh, base.size * 1.4));
+      ctx.stats.texts++;
+      out.push(withKey(textNode(segments, line.left, line.top - lead, line.right - line.left, gh + 2 * lead,
+        { autoWidth: true, align: 'LEFT', lines: 1 }), key));
+    });
+  }
+
+  /* ---------- special elements ---------- */
+  const SVG_PROPS = ['fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'stroke-dasharray',
+    'stroke-dashoffset', 'stroke-opacity', 'fill-opacity', 'opacity', 'fill-rule', 'clip-rule', 'stop-color', 'stop-opacity'];
+  const SVG_TEXT_PROPS = ['font-family', 'font-size', 'font-weight', 'font-style', 'text-anchor', 'dominant-baseline'];
+
+  function normalizeSvgValue(prop, v) {
+    if (!v) return v;
+    if (v.startsWith('url(')) return v.replace(/url\((['"]?)(.*?)\1\)/, 'url($2)').replace(/url\([^#)]*#/, 'url(#');
+    if (/color|^fill$|^stroke$/.test(prop) && COLOR_START.test(v) && !v.startsWith('rgb')) {
+      const c = parseColor(v); return c ? cssRgba(c) : v;
+    }
+    if (/width|size|offset/.test(prop)) return v.replace(/px$/, '');
+    return v;
+  }
+
+  function serializeSvg(ctx, svg, w, h) {
+    const clone = svg.cloneNode(true);
+    const orig = [svg, ...svg.querySelectorAll('*')];
+    const copies = [clone, ...clone.querySelectorAll('*')];
+    const toRemove = [];
+    orig.forEach((o, i) => {
+      const c = copies[i];
+      const s = ctx.cs(o);
+      if (s.display === 'none' && o !== svg && !o.closest('defs, symbol, clipPath, mask, linearGradient, radialGradient, pattern')) { toRemove.push(c); return; }
+      const props = /^(text|tspan|textPath)$/.test(o.localName) ? SVG_PROPS.concat(SVG_TEXT_PROPS) : SVG_PROPS;
+      for (const p of props) {
+        const v = s.getPropertyValue(p);
+        if (v) c.setAttribute(p, normalizeSvgValue(p, v));
+      }
+      c.removeAttribute('class');
+      c.removeAttribute('style');
+    });
+    toRemove.forEach((n) => n.remove());
+    // Inline <use> references that point outside this <svg> (icon sprites).
+    for (const use of [...clone.querySelectorAll('use')]) {
+      const href = use.getAttribute('href') || use.getAttribute('xlink:href') || '';
+      if (!href.startsWith('#')) continue;
+      if (clone.querySelector(href.replace(/([^\w#-])/g, '\\$1'))) continue;
+      const target = ctx.doc.getElementById(href.slice(1));
+      if (!target) continue;
+      const ns = 'http://www.w3.org/2000/svg';
+      let inst;
+      if (target.localName === 'symbol') {
+        inst = ctx.doc.createElementNS(ns, 'svg');
+        for (const a of ['viewBox', 'preserveAspectRatio']) if (target.getAttribute(a)) inst.setAttribute(a, target.getAttribute(a));
+        for (const a of ['x', 'y', 'width', 'height']) if (use.getAttribute(a)) inst.setAttribute(a, use.getAttribute(a));
+        if (!inst.getAttribute('width')) inst.setAttribute('width', '100%');
+        if (!inst.getAttribute('height')) inst.setAttribute('height', '100%');
+        for (const ch of target.childNodes) inst.appendChild(ch.cloneNode(true));
+      } else {
+        inst = ctx.doc.createElementNS(ns, 'g');
+        inst.appendChild(target.cloneNode(true));
+      }
+      for (const p of SVG_PROPS) { const v = use.getAttribute(p); if (v) inst.setAttribute(p, v); }
+      use.replaceWith(inst);
+    }
+    if (!clone.getAttribute('viewBox')) {
+      const vb = svg.viewBox && svg.viewBox.baseVal;
+      if (vb && vb.width) clone.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.width} ${vb.height}`);
+      else clone.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    }
+    clone.setAttribute('width', w); clone.setAttribute('height', h);
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    let str = new XMLSerializer().serializeToString(clone);
+    const cur = parseColor(ctx.cs(svg).color);
+    if (cur) str = str.replace(/currentColor/gi, cssRgba(cur));
+    return str;
+  }
+
+  function sizeSvgMarkup(text, w, h) {
+    const d = new DOMParser().parseFromString(text, 'image/svg+xml');
+    const svg = d.documentElement;
+    if (!svg || svg.localName !== 'svg') return null;
+    if (!svg.getAttribute('viewBox')) {
+      const ow = parseFloat(svg.getAttribute('width')) || w, oh = parseFloat(svg.getAttribute('height')) || h;
+      svg.setAttribute('viewBox', `0 0 ${ow} ${oh}`);
+    }
+    svg.setAttribute('width', w); svg.setAttribute('height', h);
+    return new XMLSerializer().serializeToString(svg);
+  }
+
+  function controlSvg(ctx, el, s, w, h) {
+    const accent = parseColor(s.accentColor && s.accentColor !== 'auto' ? s.accentColor : '#0075ff');
+    const ac = cssRgba(accent);
+    if (el.type === 'checkbox') {
+      return el.checked
+        ? `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 16 16"><rect width="16" height="16" rx="3" fill="${ac}"/><path d="M4 8.2l2.6 2.6L12 5.4" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+        : `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 16 16"><rect x=".5" y=".5" width="15" height="15" rx="2.5" fill="#fff" stroke="#767676"/></svg>`;
+    }
+    if (el.type === 'radio') {
+      return el.checked
+        ? `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7.5" fill="#fff" stroke="${ac}"/><circle cx="8" cy="8" r="4.5" fill="${ac}"/></svg>`
+        : `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7.5" fill="#fff" stroke="#767676"/></svg>`;
+    }
+    if (el.type === 'range') {
+      const min = +el.min || 0, max = +el.max || 100, pct = (el.valueAsNumber - min) / (max - min || 1);
+      const cx = 8 + pct * (w - 16);
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect x="0" y="${h / 2 - 2}" width="${w}" height="4" rx="2" fill="#d9d9d9"/><rect x="0" y="${h / 2 - 2}" width="${cx}" height="4" rx="2" fill="${ac}"/><circle cx="${cx}" cy="${h / 2}" r="8" fill="${ac}"/></svg>`;
+    }
+    return null;
+  }
+
+  function formText(ctx, el, s, frameChildren, key) {
+    let text = '', placeholder = false;
+    if (el.localName === 'select') text = el.selectedOptions[0] ? el.selectedOptions[0].text : '';
+    else if (el.localName === 'input' && /^(submit|button|reset)$/.test(el.type)) text = el.value || (el.type === 'submit' ? 'Submit' : el.type === 'reset' ? 'Reset' : '');
+    else if (el.localName === 'input' && el.type === 'password' && el.value) text = '•'.repeat(el.value.length);
+    else { text = el.value; if (!text && el.placeholder) { text = el.placeholder; placeholder = true; } }
+    if (!text) return;
+    const style = { ...textStyleOf(ctx, el) };
+    if (placeholder) {
+      const ps = ctx.win.getComputedStyle(el, '::placeholder');
+      style.fill = { type: 'SOLID', color: parseColor(ps.color) || { r: .46, g: .46, b: .46, a: 1 } };
+    }
+    style.href = null; style.decoration = 'NONE';
+    const cb = contentBox(ctx, el);
+    if (el.localName === 'select') cb.w = Math.max(0, cb.w - 16);
+    const multi = el.localName === 'textarea';
+    const btn = /^(submit|button|reset)$/.test(el.type);
+    ctx.stats.texts++;
+    frameChildren.push(withKey(textNode([{ text, style }], cb.x, cb.y, cb.w, cb.h, {
+      autoWidth: false, fixedHeight: true, align: btn ? 'CENTER' : (ALIGN[s.textAlign] || 'LEFT'),
+      valign: multi ? 'TOP' : 'CENTER', truncate: !multi,
+    }), key));
+  }
+
+  /* ---------- painting order ---------- */
+  function stackKey(s, inherited) {
+    if (s.position === 'static') return inherited;
+    const z = parseInt(s.zIndex, 10);
+    if (isNaN(z)) return [2, 0];
+    return z < 0 ? [0, z] : z === 0 ? [2, 0] : [3, z];
+  }
+  const withKey = (node, key) => { node._k = key; return node; };
+  function sortChildren(list) {
+    list.forEach((n, i) => { n._i = i; });
+    list.sort((a, b) => (a._k[0] - b._k[0]) || (a._k[1] - b._k[1]) || (a._i - b._i));
+    list.forEach((n) => { delete n._i; delete n._k; if (n.children) sortChildren(n.children); });
+  }
+
+  /* ---------- the walk ---------- */
+  function walk(ctx, el, out, inheritedKey, opt = {}) {
+    const tag = el.localName;
+    if (SKIP.has(tag)) return;
+    const s = ctx.cs(el);
+    if (s.display === 'none') return;
+    const opacity = parseFloat(s.opacity);
+    if (opacity === 0) return;
+    const r = el.getBoundingClientRect();
+    const w = r.width, h = r.height;
+    const visible = s.visibility === 'visible';
+    const key = stackKey(s, inheritedKey);
+    ctx.stats.nodes++;
+
+    const v = visualsOf(ctx, el, s, w, h, opt.skipBg);
+    if (!visible) { v.fills = []; v.strokes = null; v.effects = []; }
+    if (v.clip && (w < 0.5 || h < 0.5)) return; // clipped to nothing
+
+    // Replaced / special elements
+    if (tag === 'svg') {
+      if (!visible || w < 0.5 || h < 0.5) return;
+      const node = { type: 'svg', name: nameOf(el), x: r.left, y: r.top, w, h, opacity, svg: serializeSvg(ctx, el, w, h) };
+      out.push(withKey(node, key));
+      return;
+    }
+
+    const makeFrame = (name) => ({
+      type: 'frame', name: name || nameOf(el), x: r.left, y: r.top, w, h,
+      fills: v.fills, strokes: v.strokes, effects: v.effects, radius: v.radius,
+      clip: v.clip, opacity, children: [],
+    });
+
+    if (tag === 'img' || tag === 'video' || tag === 'canvas' || tag === 'iframe' || tag === 'object' || tag === 'embed' || (tag === 'input' && el.type === 'image')) {
+      if (!visible) return;
+      const f = makeFrame();
+      f.clip = true;
+      const fit = s.objectFit === 'contain' || s.objectFit === 'scale-down' ? 'FIT' : 'FILL';
+      if (tag === 'img' || tag === 'input') {
+        const src = el.currentSrc || el.src;
+        if (src) { useAsset(ctx, src, f, 'img', { scaleMode: fit, el }); ctx.stats.images++; }
+      } else if (tag === 'video' && el.poster) {
+        useAsset(ctx, el.poster, f, 'bg', { scaleMode: fit }); ctx.stats.images++;
+      } else if (tag === 'canvas') {
+        try { useAsset(ctx, el.toDataURL('image/png'), f, 'bg', { scaleMode: 'FILL' }); } catch (e) { /* tainted */ }
+      } else {
+        f.fills.push({ type: 'SOLID', color: { r: .9, g: .9, b: .9, a: 1 } });
+        f.name = `${tag} placeholder`;
+      }
+      if (tag === 'video' && !el.poster) f.fills.push({ type: 'SOLID', color: { r: .1, g: .1, b: .1, a: 1 } });
+      out.push(withKey(f, key));
+      return;
+    }
+
+    if (tag === 'input' && /^(checkbox|radio|range)$/.test(el.type)) {
+      if (!visible) return;
+      const svg = controlSvg(ctx, el, s, Math.max(1, w), Math.max(1, h));
+      if (svg) out.push(withKey({ type: 'svg', name: nameOf(el), x: r.left, y: r.top, w, h, opacity, svg }, key));
+      return;
+    }
+
+    const isRoot = !!opt.root;
+    const alMode = ctx.opts.autoLayout || 'off';
+    const alCandidate = alMode !== 'off' && w >= 1 && h >= 1 && !/^(input|textarea|select)$/.test(tag) && (
+      /(^|-)(flex|grid)$/.test(s.display) ||
+      (alMode === 'all' && /^(block|flow-root|list-item|inline-block)$/.test(s.display)));
+    const needsFrame = isRoot || opt.forceFrame || alCandidate || !ctx.opts.flatten || hasPaint(v) || v.clip || opacity < 1 ||
+      /^(input|textarea|select|button)$/.test(tag);
+    let target = out, frame = null, childKey = key;
+    // An inline box broken across lines paints one box per line fragment.
+    const frags = s.display === 'inline' && hasPaint(v) ? [...el.getClientRects()].filter((q) => q.width > 0) : [];
+    if (frags.length > 1) {
+      frags.forEach((q, i) => {
+        out.push(withKey({
+          type: 'frame', name: nameOf(el) + ` (line ${i + 1})`, x: q.left, y: q.top, w: q.width, h: q.height,
+          fills: v.fills, strokes: v.strokes, effects: v.effects, radius: v.radius, clip: false, opacity, children: [],
+        }, key));
+      });
+    } else if (needsFrame) {
+      frame = makeFrame();
+      out.push(withKey(frame, key));
+      target = frame.children;
+      childKey = [1, 0];
+      if (alCandidate && frags.length <= 1) frame.flex = layoutHint(s, el);
+      frame._pad = ['Top', 'Right', 'Bottom', 'Left'].map((sd) => px(s['padding' + sd]) + px(s['border' + sd + 'Width']));
+    }
+    const asItems = !!(frame && frame.flex);
+
+    if (/^(input|textarea|select)$/.test(tag)) {
+      if (visible) formText(ctx, el, s, target, childKey);
+      return;
+    }
+
+    // List markers (approximate — browsers do not expose ::marker geometry)
+    if (s.display === 'list-item' && s.listStyleType !== 'none' && s.listStylePosition !== 'inside' && visible) {
+      const marker = listMarker(el, s);
+      if (marker) {
+        const style = { ...textStyleOf(ctx, el), href: null, decoration: 'NONE', textCase: 'ORIGINAL' };
+        const cb = contentBox(ctx, el);
+        const mw = style.size * 2;
+        const lineH = style.lineHeight || style.size * 1.2;
+        const m = withKey(textNode([{ text: marker, style }], cb.x - mw - style.size * 0.5, cb.y, mw, lineH,
+          { autoWidth: false, align: 'RIGHT', marker: true }), childKey);
+        if (asItems) m._item = { abs: true, grow: 0, alignSelf: 'auto' };
+        target.push(m);
+      }
+    }
+
+    // Inside an Auto Layout candidate every flex item must become exactly one layer.
+    const emitItem = (produce, info) => {
+      if (!asItems) { produce(target); return; }
+      const tmp = [];
+      produce(tmp);
+      if (!tmp.length) return;
+      const node = tmp.length === 1 ? tmp[0] : groupNodes(tmp);
+      node._item = info;
+      target.push(node);
+    };
+    const anon = { grow: 0, alignSelf: 'auto', abs: false, anon: true };
+    let run = [];
+    const flush = () => {
+      if (!run.length) return;
+      const nodes = run; run = [];
+      emitItem((t) => emitRun(ctx, nodes, el, t, childKey), anon);
+    };
+    for (const child of el.childNodes) {
+      if (child.nodeType === 3) run.push(child);
+      else if (child.nodeType === 1) {
+        if (!asItems && isPureInline(ctx, child)) run.push(child);
+        else if (asItems && isPureInline(ctx, child) && ctx.cs(child).display === 'inline') run.push(child);
+        else { flush(); emitItem((t) => walk(ctx, child, t, childKey, { forceFrame: asItems }), itemInfo(ctx, child)); }
+      }
+    }
+    flush();
+  }
+
+  /* ---------- Auto Layout hints ---------- */
+  function layoutHint(s, el) {
+    const gap = (v) => (v === 'normal' ? 0 : px(v));
+    const isFlex = /flex$/.test(s.display), isGrid = /grid$/.test(s.display);
+    return {
+      kind: isFlex ? 'flex' : isGrid ? 'grid' : 'block',
+      direction: isFlex ? (s.flexDirection.startsWith('column') ? 'VERTICAL' : 'HORIZONTAL') : isGrid ? null : 'VERTICAL',
+      wrap: isFlex ? s.flexWrap !== 'nowrap' : isGrid,
+      justify: s.justifyContent,
+      alignItems: s.alignItems,
+      rowGap: gap(s.rowGap), colGap: gap(s.columnGap),
+      pad: ['Top', 'Right', 'Bottom', 'Left'].map((sd) => px(s['padding' + sd]) + px(s['border' + sd + 'Width'])),
+      textAlign: ALIGN[s.textAlign] || 'LEFT',
+      scroll: s.overflowX === 'auto' || s.overflowX === 'scroll' || s.overflowY === 'auto' || s.overflowY === 'scroll',
+    };
+  }
+
+  function itemInfo(ctx, child) {
+    const cs = ctx.cs(child);
+    return {
+      grow: parseFloat(cs.flexGrow) || 0,
+      alignSelf: cs.alignSelf,
+      abs: cs.position === 'absolute' || cs.position === 'fixed',
+    };
+  }
+
+  function groupNodes(nodes) {
+    const x = Math.min(...nodes.map((n) => n.x)), y = Math.min(...nodes.map((n) => n.y));
+    const x2 = Math.max(...nodes.map((n) => n.x + n.w)), y2 = Math.max(...nodes.map((n) => n.y + n.h));
+    const g = {
+      type: 'frame', name: 'group', x, y, w: x2 - x, h: y2 - y, fills: [], strokes: null, effects: [], radius: null,
+      clip: false, opacity: 1, children: nodes,
+    };
+    g._k = nodes[0]._k;
+    return g;
+  }
+
+  function listMarker(el, s) {
+    const t = s.listStyleType;
+    if (t === 'disc') return '•';
+    if (t === 'circle') return '◦';
+    if (t === 'square') return '▪';
+    if (/^(decimal|decimal-leading-zero|lower-alpha|lower-latin|upper-alpha|upper-latin|lower-roman|upper-roman)$/.test(t)) {
+      const list = el.parentElement;
+      let n = list && list.localName === 'ol' ? (parseInt(list.getAttribute('start'), 10) || 1) : 1;
+      for (const sib of list ? list.children : []) { if (sib === el) break; if (sib.localName === 'li') n++; }
+      if (el.value) n = el.value;
+      const alpha = (k) => { let s = ''; while (k > 0) { k--; s = String.fromCharCode(97 + (k % 26)) + s; k = Math.floor(k / 26); } return s; };
+      const roman = (k) => [[1000, 'm'], [900, 'cm'], [500, 'd'], [400, 'cd'], [100, 'c'], [90, 'xc'], [50, 'l'], [40, 'xl'], [10, 'x'], [9, 'ix'], [5, 'v'], [4, 'iv'], [1, 'i']]
+        .reduce((acc, [v, r]) => { while (k >= v) { acc += r; k -= v; } return acc; }, '');
+      let str = String(n);
+      if (t === 'decimal-leading-zero') str = n < 10 ? '0' + n : str;
+      if (/alpha|latin/.test(t)) str = alpha(n);
+      if (/roman/.test(t)) str = roman(n);
+      if (t.startsWith('upper')) str = str.toUpperCase();
+      return str + '.';
+    }
+    if (/^["']/.test(t)) return t.slice(1, -1);
+    return null;
+  }
+
+
+  /* ---------- Auto Layout fitting ----------
+   * For each frame that came from a flex/grid (or stacked block) container, find Figma
+   * Auto Layout settings that reproduce the measured child positions. Settings are only
+   * applied when a simulation of Figma's layout lands every child within tolerance;
+   * otherwise the frame keeps exact absolute positions.
+   */
+  const TOL = 2;
+  const near = (a, b, t = TOL) => Math.abs(a - b) <= t;
+
+  function axisOf(mode) {
+    return mode === 'HORIZONTAL'
+      ? { s: 'x', z: 'w', cs: 'y', cz: 'h', ps: 3, pe: 1, pcs: 0, pce: 2 }
+      : { s: 'y', z: 'h', cs: 'x', cz: 'w', ps: 0, pe: 2, pcs: 3, pce: 1 };
+  }
+
+  function wantsStretch(hint, item) {
+    if (hint.kind === 'block') return true;
+    const a = item.alignSelf && item.alignSelf !== 'auto' ? item.alignSelf : hint.alignItems;
+    return a === 'normal' || a === 'stretch';
+  }
+
+  function crossAlign(items, innerC0, innerCLen, ax) {
+    let options = ['MIN', 'CENTER', 'MAX'];
+    for (const it of items) {
+      const off = it.n[ax.cs] - innerC0, free = innerCLen - it.n[ax.cz];
+      if (near(free, 0)) continue; // fills the cross axis: matches any alignment
+      options = options.filter((o) => near(off, o === 'MIN' ? 0 : o === 'CENTER' ? free / 2 : free));
+    }
+    return options[0] || null;
+  }
+
+  let why = '', whyDetail = null, stats_grouped = 0;
+  function fitLine(frame, items, mode, hint) {
+    const ax = axisOf(mode), pad = frame.flex.pad.slice();
+    const n = items.length;
+    items.sort((a, b) => a.n[ax.s] - b.n[ax.s]);
+    const start = (it) => it.n[ax.s], end = (it) => it.n[ax.s] + it.n[ax.z];
+    for (let i = 1; i < n; i++) if (start(items[i]) < start(items[i - 1]) - TOL) { why = 'order'; return null; }
+    // Items must not overlap on the cross axis being "beside" each other in the wrong direction.
+    const gaps = [];
+    for (let i = 1; i < n; i++) gaps.push(start(items[i]) - end(items[i - 1]));
+    if (gaps.length && Math.max(...gaps) - Math.min(...gaps) > TOL) {
+      why = 'uneven-gaps ' + mode;
+      whyDetail = { frame: frame.name, gaps: gaps.map((x) => Math.round(x)), items: items.map((it) => (it.n.type === 'text' ? '"' + it.n.segments.map((sg) => sg.text).join('').slice(0, 18) + '"' : it.n.name) + ' w' + Math.round(it.n[ax.z])) };
+      return null;
+    }
+    const g = gaps.length ? gaps.reduce((a, b) => a + b, 0) / gaps.length : 0;
+    // A row/column whose items overlap heavily is not really laid out along this axis.
+    if (gaps.length && g < -Math.min(...items.map((it) => it.n[ax.z])) * 0.5) { why = 'overlap ' + mode; return null; }
+
+    const innerStart = frame[ax.s] + pad[ax.ps];
+    const innerEnd = frame[ax.s] + frame[ax.z] - pad[ax.pe];
+    const lead = start(items[0]) - innerStart, trail = innerEnd - end(items[n - 1]);
+    if (lead < -TOL || trail < -TOL) { why = 'overflow ' + mode; return null; }
+
+    let justify;
+    // Space between: when the CSS says so, or when exactly two items sit against opposite edges with a real gap
+    // (margin-left:auto / label-left value-right rows) — same look, but it keeps working when resized.
+    const cssGap = mode === 'HORIZONTAL' ? (hint.colGap || 0) : (hint.rowGap || 0);
+    const pushedApart = n === 2 && g > 12 && !near(g, cssGap, 1); // a real CSS gap stays a gap
+    if ((/space-between/.test(hint.justify) || pushedApart) && n > 1 && near(lead, 0) && near(trail, 0) && g > TOL) justify = 'SPACE_BETWEEN';
+    else if (near(lead, 0)) justify = 'MIN';
+    else if (near(trail, 0)) justify = 'MAX';
+    else if (near(lead, trail)) justify = 'CENTER';
+    else { justify = 'MIN'; pad[ax.ps] += lead; }
+
+    const innerC0 = frame[ax.cs] + pad[ax.pcs];
+    const innerCLen = frame[ax.cz] - pad[ax.pcs] - pad[ax.pce];
+    let align = crossAlign(items, innerC0, innerCLen, ax);
+    // Text rows aligned on their baselines (CSS align-items: baseline) map to Figma's Baseline alignment,
+    // which lines up the first-line baselines exactly as the browser did — and keeps doing so when text changes.
+    if (mode === 'HORIZONTAL' && /baseline/.test(hint.alignItems || '')) align = 'BASELINE';
+    if (!align) {
+      // Same offset for every item (e.g. margins): fold it into the padding.
+      const offs = items.map((it) => it.n[ax.cs] - innerC0);
+      if (offs.every((o) => near(o, offs[0])) && offs[0] >= 0) { pad[ax.pcs] += offs[0]; align = 'MIN'; }
+      else { why = 'mixed-cross-align ' + mode + ' ' + (hint.alignItems || ''); return null; }
+    }
+    const cInner = frame[ax.cz] - pad[ax.pcs] - pad[ax.pce];
+
+    // flex-grow → Fill container, when Figma's equal split reproduces the measured sizes.
+    const growers = items.filter((it) => it.info.grow > 0);
+    let grow = false;
+    if (growers.length && justify !== 'SPACE_BETWEEN') {
+      const fixed = items.filter((it) => !(it.info.grow > 0)).reduce((a, it) => a + it.n[ax.z], 0);
+      const share = (frame[ax.z] - pad[ax.ps] - pad[ax.pe] - fixed - g * (n - 1)) / growers.length;
+      grow = growers.every((it) => near(it.n[ax.z], share));
+    }
+    const freeMain = frame[ax.z] - pad[ax.ps] - pad[ax.pe] - items.reduce((a, it) => a + it.n[ax.z], 0) - g * (n - 1);
+    const hugMain = !grow && justify !== 'SPACE_BETWEEN' && near(freeMain, 0) && !hint.scroll;
+    for (const it of items) {
+      const oneLineText = it.n.type === 'text' && it.n.autoWidth;
+      it.child = {
+        grow: grow && it.info.grow > 0 && !oneLineText,
+        // A one-line label must keep hugging its text: stretching it would fix its width to the browser's
+        // measurement and it would wrap as soon as Figma draws the font a hair wider.
+        stretch: !oneLineText && wantsStretch(hint, it.info) && near(it.n[ax.cz], cInner),
+      };
+    }
+    // Figma sizes a hugging frame from its non-Fill children only.
+    const sizers = items.filter((it) => !it.child.stretch);
+    const hugC = sizers.length > 0 && near(Math.max(...sizers.map((it) => it.n[ax.cz])), cInner) && !hint.scroll;
+    return {
+      mode, wrap: false, spacing: justify === 'SPACE_BETWEEN' ? 0 : round2(g), justify, align,
+      pad: pad.map(round2), hugMain, hugCross: hugC, order: items,
+    };
+  }
+
+  function fitWrap(frame, items, hint) {
+    const ax = axisOf('HORIZONTAL'), pad = frame.flex.pad.slice();
+    // Group into rows by vertical overlap.
+    const rows = [];
+    for (const it of items.slice().sort((a, b) => a.n.y - b.n.y || a.n.x - b.n.x)) {
+      const mid = it.n.y + it.n.h / 2;
+      let row = rows.find((r) => mid >= r.top && mid <= r.bottom);
+      if (!row) { row = { top: it.n.y, bottom: it.n.y + it.n.h, items: [] }; rows.push(row); }
+      row.items.push(it); row.top = Math.min(row.top, it.n.y); row.bottom = Math.max(row.bottom, it.n.y + it.n.h);
+    }
+    if (rows.length < 2) { why = 'wrap-one-row'; return null; }
+    rows.forEach((r) => r.items.sort((a, b) => a.n.x - b.n.x));
+    const gaps = [];
+    rows.forEach((r) => { for (let i = 1; i < r.items.length; i++) gaps.push(r.items[i].n.x - r.items[i - 1].n.x - r.items[i - 1].n.w); });
+    if (!gaps.length || Math.max(...gaps) - Math.min(...gaps) > TOL) { why = 'wrap-uneven-gaps'; return null; }
+    const g = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+    const rgaps = [];
+    for (let i = 1; i < rows.length; i++) rgaps.push(rows[i].top - rows[i - 1].bottom);
+    if (Math.max(...rgaps) - Math.min(...rgaps) > TOL) { why = 'wrap-uneven-rows'; return null; }
+    const rg = rgaps.reduce((a, b) => a + b, 0) / rgaps.length;
+    const innerStart = frame.x + pad[3], innerLen = frame.w - pad[1] - pad[3];
+    // Every row must share one horizontal alignment.
+    let justify = null;
+    for (const cand of ['MIN', 'CENTER', 'MAX']) {
+      const ok = rows.every((r) => {
+        const total = r.items.reduce((a, it) => a + it.n.w, 0) + g * (r.items.length - 1);
+        const want = cand === 'MIN' ? 0 : cand === 'CENTER' ? (innerLen - total) / 2 : innerLen - total;
+        return near(r.items[0].n.x - innerStart, want);
+      });
+      if (ok) { justify = cand; break; }
+    }
+    if (!justify) { why = 'wrap-justify'; return null; }
+    // Figma breaks a row when the next item no longer fits; check that gives the same rows.
+    let used = -g, rowIdx = 0, count = 0;
+    for (const r of rows) for (const it of r.items) {
+      if (used + g + it.n.w > innerLen + TOL && count > 0) { rowIdx++; used = -g; count = 0; }
+      if (rows[rowIdx] !== r) { why = 'wrap-breaks'; return null; }
+      used += g + it.n.w; count++;
+    }
+    const innerTop = frame.y + pad[0];
+    if (!near(rows[0].top, innerTop)) { why = 'wrap-top'; return null; }
+    let align = null;
+    for (const cand of ['MIN', 'CENTER', 'MAX']) {
+      const ok = rows.every((r) => r.items.every((it) => {
+        const free = (r.bottom - r.top) - it.n.h;
+        return near(it.n.y - r.top, cand === 'MIN' ? 0 : cand === 'CENTER' ? free / 2 : free);
+      }));
+      if (ok) { align = cand; break; }
+    }
+    if (!align) { why = 'wrap-align'; return null; }
+    const contentH = rows[rows.length - 1].bottom - rows[0].top;
+    return {
+      mode: 'HORIZONTAL', wrap: true, spacing: round2(g), counterSpacing: round2(rg), justify, align,
+      pad: pad.map(round2), hugMain: false, hugCross: near(contentH, frame.h - pad[0] - pad[2]) && !hint.scroll,
+      order: rows.flatMap((r) => r.items.map((it) => { it.child = { grow: false, stretch: false }; return it; })),
+    };
+  }
+
+  const round2 = (v) => Math.round(v * 100) / 100;
+
+  /** Turn a successful fit into node fields (shared by real frames and generated groups). */
+  function applyFit(node, fit, abs) {
+    node.autoLayout = {
+      mode: fit.mode, wrap: fit.wrap, spacing: fit.spacing, counterSpacing: fit.counterSpacing || 0,
+      justify: fit.justify, align: fit.align, pad: fit.pad, hugMain: fit.hugMain, hugCross: fit.hugCross,
+    };
+    fit.order.forEach((it) => { it.n.layoutChild = it.child; });
+    (abs || []).forEach((a) => { a.n.layoutChild = { absolute: true }; });
+    node.children = fit.order.map((it) => it.n).concat((abs || []).map((a) => a.n));
+  }
+
+  /**
+   * Rows/columns whose items are spaced unevenly (margins, margin-left:auto…). Auto Layout has one gap per frame,
+   * so split the items into runs separated by the smallest gap, wrap each run in its own Auto Layout group,
+   * and lay the groups out in the parent — the way a designer would rebuild it.
+   */
+  function fitGrouped(frame, items, mode, hint, depth) {
+    const ax = axisOf(mode);
+    items = items.slice().sort((a, b) => a.n[ax.s] - b.n[ax.s]);
+    if (items.length < 3 || depth > 3) return null;
+    const gaps = [];
+    for (let i = 1; i < items.length; i++) gaps.push(items[i].n[ax.s] - (items[i - 1].n[ax.s] + items[i - 1].n[ax.z]));
+    if (Math.min(...gaps) < -TOL) return null;
+    const gmin = Math.min(...gaps);
+    const runs = [[items[0]]];
+    gaps.forEach((g, i) => { if (g > gmin + TOL) runs.push([items[i + 1]]); else runs[runs.length - 1].push(items[i + 1]); });
+    if (runs.length === items.length || runs.length < 2) return null;
+    const next = [];
+    for (const run of runs) {
+      if (run.length === 1) { next.push(run[0]); continue; }
+      const x1 = Math.min(...run.map((r) => r.n.x)), y1 = Math.min(...run.map((r) => r.n.y));
+      const x2 = Math.max(...run.map((r) => r.n.x + r.n.w)), y2 = Math.max(...run.map((r) => r.n.y + r.n.h));
+      const g = {
+        type: 'frame', name: 'group', x: x1, y: y1, w: x2 - x1, h: y2 - y1, fills: [], strokes: null, effects: [],
+        radius: null, clip: false, opacity: 1, children: run.map((r) => r.n),
+      };
+      g.flex = { ...hint, kind: 'group', direction: mode, wrap: false, justify: 'normal', pad: [0, 0, 0, 0], scroll: false };
+      const fit = fitLine(g, run.map((r) => ({ ...r })), mode, g.flex);
+      if (!fit) return null;
+      applyFit(g, fit, []);
+      delete g.flex;
+      next.push({ n: g, info: { grow: 0, alignSelf: 'auto', abs: false } });
+    }
+    const asGroups = { ...hint, autoGap: true };
+    return fitLine(frame, next.map((x) => ({ ...x })), mode, asGroups) || fitGrouped(frame, next, mode, asGroups, depth + 1);
+  }
+
+  function fitFrame(frame) {
+    why = 'no-items';
+    const hint = frame.flex;
+    const flow = [], abs = [];
+    for (const n of frame.children) {
+      const info = n._item || { grow: 0, alignSelf: 'auto', abs: false };
+      (info.abs ? abs : flow).push({ n, info });
+    }
+    if (!flow.length) return null;
+    if (hint.kind === 'block') {
+      // Text directly in a block is an anonymous full-width line box: make it span the content width.
+      const x0 = frame.x + hint.pad[3], w0 = frame.w - hint.pad[1] - hint.pad[3];
+      for (const { n, info } of flow) {
+        // Centred/right-aligned text that is an anonymous line box: give it the full content width so the
+        // alignment survives in Auto Layout — but only when there is generous room, so it can never wrap.
+        const slack = w0 - n.w;
+        if (n.type === 'text' && n.autoWidth && info.anon && !n.marker && hint.textAlign !== 'LEFT' &&
+            slack >= Math.max(24, n.w * 0.2)) {
+          n.natW = n.w; n.x = x0; n.w = w0; n.autoWidth = false; n.align = hint.textAlign; n.lines = 1;
+        }
+      }
+    }
+    let fit = null;
+    if (hint.wrap) fit = fitWrap(frame, flow.map((x) => ({ ...x })), hint);
+    if (!fit) {
+      const dirs = hint.direction ? [hint.direction] : ['HORIZONTAL', 'VERTICAL'];
+      if (flow.length === 1 && !hint.direction) dirs.reverse();
+      for (const d of dirs) { fit = fitLine(frame, flow.map((x) => ({ ...x })), d, hint); if (fit) break; }
+      if (!fit) for (const d of dirs) { fit = fitGrouped(frame, flow.map((x) => ({ ...x })), d, hint, 0); if (fit) { stats_grouped++; break; } }
+    }
+    if (!fit) return null;
+    return { fit, abs };
+  }
+
+  /** A frame that paints nothing, clips nothing, has no padding and holds one thing is just a wrapper. */
+  function isBareWrapper(n) {
+    return n.type === 'frame' && n.children && n.children.length === 1 && !n.clip && (n.opacity == null || n.opacity >= 1) &&
+      !(n.fills && n.fills.length) && !n.strokes && !(n.effects && n.effects.length) &&
+      (n._pad || [0, 0, 0, 0]).every((p) => p < 0.5) && !(n.children[0]._item && n.children[0]._item.abs) &&
+      // …and only if it hugs its content; a wrapper that gives its child a size (a 56px button around a 20px
+      // icon, a fixed-width table cell) carries layout and must stay.
+      near(n.children[0].x, n.x, 1.5) && near(n.children[0].w, n.w, 1.5) &&
+      near(n.children[0].y, n.y, 2) && near(n.children[0].h, n.h, 2);
+  }
+
+  function applyAutoLayout(node, stats) {
+    if (node.children) node.children.forEach((c) => applyAutoLayout(c, stats));
+    if (node.type === 'frame' && node.flex && node.children) {
+      // e.g. <span class="num">92%</span> inside a flex row: put the text itself in the row.
+      node.children = node.children.map((c) => {
+        if (!isBareWrapper(c)) return c;
+        const inner = c.children[0];
+        inner._item = c._item;
+        stats.unwrapped = (stats.unwrapped || 0) + 1;
+        return inner;
+      });
+    }
+    if (node.type !== 'frame' || !node.flex) { return; }
+    node._pad = node.flex.pad;
+    const res = fitFrame(node);
+    if (res) {
+      const { fit, abs } = res;
+      applyFit(node, fit, abs);
+      stats.autoLayout++;
+    } else {
+      stats.autoLayoutSkipped++;
+      const k = node.flex.kind + ': ' + why;
+      stats.skipReasons = stats.skipReasons || {};
+      stats.skipReasons[k] = (stats.skipReasons[k] || 0) + 1;
+      whyDetail = null;
+    }
+    delete node.flex;
+  }
+
+  function cleanupLayoutMarks(n) {
+    delete n._item; delete n._pad; delete n.flex;
+    (n.children || []).forEach(cleanupLayoutMarks);
+  }
+
+  /* ---------- assets ---------- */
+  function sniff(bytes) {
+    if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) return 'png';
+    if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return 'jpeg';
+    if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) return 'gif';
+    return null;
+  }
+
+  async function rasterize(source, w, h) {
+    const MAX = 4096;
+    const scale = Math.min(1, MAX / Math.max(w, h));
+    const cw = Math.max(1, Math.round(w * scale)), ch = Math.max(1, Math.round(h * scale));
+    const c = document.createElement('canvas'); c.width = cw; c.height = ch;
+    c.getContext('2d').drawImage(source, 0, 0, cw, ch);
+    const blob = await new Promise((res) => c.toBlob(res, 'image/png'));
+    return new Uint8Array(await blob.arrayBuffer());
+  }
+
+  function loadImgEl(url) {
+    return new Promise((res, rej) => {
+      const im = new Image();
+      im.onload = () => res(im); im.onerror = rej; im.src = url;
+    });
+  }
+
+  async function fetchAsset(url) {
+    const resp = await fetch(url, { mode: 'cors', credentials: 'omit' });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const blob = await resp.blob();
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    const head = new TextDecoder().decode(bytes.slice(0, 512)).trim();
+    const isSvg = /svg/.test(blob.type) || /^(<\?xml[^>]*>\s*)?(<!--[\s\S]*?-->\s*)*(<!DOCTYPE svg[^>]*>\s*)?<svg/i.test(head);
+    return { blob, bytes, isSvg };
+  }
+
+  async function resolveAssets(ctx, onProgress) {
+    const images = {};
+    let nextId = 1, done = 0;
+    const total = ctx.assets.size;
+    const entries = [...ctx.assets.entries()];
+    const worker = async () => {
+      while (entries.length) {
+        const [url, info] = entries.shift();
+        let res = null;
+        try { res = await fetchAsset(url); } catch (e) { res = null; }
+        const maxW = Math.max(...info.uses.map((u) => u.node.w), 1), maxH = Math.max(...info.uses.map((u) => u.node.h), 1);
+        let rasterId = null;
+        const getRaster = async () => {
+          if (rasterId) return rasterId;
+          let bytes = null;
+          if (res && !res.isSvg) {
+            const kind = sniff(res.bytes);
+            let dims = null;
+            try { const bmp = await createImageBitmap(res.blob); dims = [bmp.width, bmp.height]; if (!kind || Math.max(...dims) > 4096) bytes = await rasterize(bmp, dims[0], dims[1]); bmp.close && bmp.close(); } catch (e) { /* undecodable */ }
+            if (!bytes && kind && dims) bytes = res.bytes;
+          } else if (res && res.isSvg) {
+            const blobUrl = URL.createObjectURL(new Blob([res.bytes], { type: 'image/svg+xml' }));
+            try { const im = await loadImgEl(blobUrl); bytes = await rasterize(im, maxW * 2, maxH * 2); } catch (e) { /* bad svg */ }
+            URL.revokeObjectURL(blobUrl);
+          }
+          if (!bytes) {
+            // Last resort: draw the image element the page already loaded (fails if cross-origin tainted).
+            const use = info.uses.find((u) => u.el && u.el.complete && u.el.naturalWidth);
+            if (use) { try { bytes = await rasterize(use.el, use.el.naturalWidth, use.el.naturalHeight); } catch (e) { /* tainted */ } }
+          }
+          if (!bytes) return null;
+          rasterId = 'img' + nextId++;
+          images[rasterId] = bytes;
+          return rasterId;
+        };
+        for (const use of info.uses) {
+          const n = use.node;
+          if (use.kind === 'img' && res && res.isSvg) {
+            const markup = sizeSvgMarkup(new TextDecoder().decode(res.bytes), n.w, n.h);
+            if (markup) {
+              // Keep the frame (it may have borders/radius) and put the vector inside.
+              n.children.push({ type: 'svg', name: 'image', x: n.x, y: n.y, w: n.w, h: n.h, opacity: 1, svg: markup });
+              continue;
+            }
+          }
+          const id = await getRaster();
+          if (id) n.fills.push({ type: 'IMAGE', imageId: id, scaleMode: use.scaleMode || 'FILL' });
+          else {
+            n.fills.push({ type: 'SOLID', color: { r: .85, g: .85, b: .85, a: 1 } });
+            n.name += ' (image unavailable)';
+          }
+        }
+        done++; onProgress && onProgress(done, total);
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(6, entries.length) }, worker));
+    return images;
+  }
+
+  /**
+   * Canvas imports: when one element exactly covers the cropped area (the card, poster or slide itself) and
+   * contains everything that paints, use it as the frame's content instead of the page wrappers around it.
+   */
+  function hoistCanvasContent(root) {
+    const box = [root.x, root.y, root.w, root.h];
+    const fits = (n) => near(n.x, box[0], 1) && near(n.y, box[1], 1) && near(n.w, box[2], 1) && near(n.h, box[3], 1);
+    const painted = (n) => n.type !== 'frame' || (n.fills && n.fills.length) || n.strokes || (n.effects && n.effects.length);
+    const countPainted = (n) => (painted(n) ? 1 : 0) + (n.children || []).reduce((a, c) => a + countPainted(c), 0);
+    const total = (root.children || []).reduce((a, c) => a + countPainted(c), 0);
+    let best = null;
+    const visit = (n) => {
+      if (n.type === 'frame' && fits(n) && countPainted(n) === total) best = n; // deepest match wins
+      (n.children || []).forEach(visit);
+    };
+    (root.children || []).forEach(visit);
+    if (best && !root.children.includes(best)) {
+      best.layoutChild = null;
+      root.children = [best];
+    }
+  }
+
+  /** Union of everything that paints (fills, strokes, effects, text, vectors) — wrappers don't count. */
+  function contentBounds(root) {
+    let x1 = Infinity, y1 = Infinity, x2 = -Infinity, y2 = -Infinity;
+    const add = (n, clip) => {
+      let a = n.x, b = n.y, c = n.x + n.w, d = n.y + n.h;
+      if (clip) { a = Math.max(a, clip[0]); b = Math.max(b, clip[1]); c = Math.min(c, clip[2]); d = Math.min(d, clip[3]); }
+      if (c - a < 0.5 || d - b < 0.5) return;
+      x1 = Math.min(x1, a); y1 = Math.min(y1, b); x2 = Math.max(x2, c); y2 = Math.max(y2, d);
+    };
+    const visit = (n, clip) => {
+      if (n.type !== 'frame') { add(n, clip); return; }
+      const painted = (n.fills && n.fills.length) || n.strokes || (n.effects && n.effects.length);
+      if (painted) add(n, clip);
+      let inner = clip;
+      if (n.clip) {
+        const r = [n.x, n.y, n.x + n.w, n.y + n.h];
+        inner = clip ? [Math.max(r[0], clip[0]), Math.max(r[1], clip[1]), Math.min(r[2], clip[2]), Math.min(r[3], clip[3])] : r;
+      }
+      (n.children || []).forEach((c) => visit(c, inner));
+    };
+    (root.children || []).forEach((c) => visit(c, null));
+    if (x1 === Infinity) return null;
+    return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+  }
+
+  async function extract(win, opts, onProgress) {
+    const ctx = createContext(win, opts);
+    const doc = win.document;
+    const htmlS = ctx.cs(doc.documentElement), bodyS = doc.body ? ctx.cs(doc.body) : null;
+    const W = opts.width;
+    const H = Math.max(opts.height, doc.documentElement.scrollHeight, doc.body ? doc.body.scrollHeight : 0);
+
+    // The canvas background comes from <html>, or propagates from <body>.
+    const htmlBg = parseColor(htmlS.backgroundColor);
+    const propagateFromBody = !(htmlBg && htmlBg.a > 0) && htmlS.backgroundImage === 'none';
+    const canvasS = propagateFromBody && bodyS ? bodyS : htmlS;
+    const rootFills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1, a: 1 } }];
+    const cbg = parseColor(canvasS.backgroundColor);
+    if (cbg && cbg.a > 0) rootFills.push({ type: 'SOLID', color: cbg });
+    rootFills.push(...parseBackgroundLayers(canvasS, W, H));
+
+    const root = {
+      type: 'frame', name: (doc.title || opts.name || 'Imported page') + ` — ${opts.label || W + 'px'}`,
+      x: 0, y: 0, w: W, h: H, fills: rootFills, strokes: null, effects: [], radius: null,
+      clip: true, opacity: 1, children: [],
+    };
+    if (doc.body) walk(ctx, doc.body, root.children, [1, 0], { skipBg: propagateFromBody, root: false });
+    sortChildren(root.children);
+    ctx.stats.autoLayout = 0; ctx.stats.autoLayoutSkipped = 0;
+    applyAutoLayout(root, ctx.stats);
+    cleanupLayoutMarks(root);
+    ctx.stats.grouped = stats_grouped; stats_grouped = 0;
+    ctx.stats.autoLayout = 0;
+    (function count(n) { if (n.autoLayout) ctx.stats.autoLayout++; (n.children || []).forEach(count); })(root);
+
+    if (opts.fit === 'canvas') {
+      // Size the frame to what the page actually paints. Fluid pages (content spanning the
+      // whole viewport) keep the viewport width and full height.
+      const b = contentBounds(root);
+      if (b && b.w >= 1 && b.h >= 1) {
+        const fluid = b.x <= 1 && b.x + b.w >= W - 1;
+        if (!fluid) { root.x = b.x; root.w = b.w; }
+        root.y = fluid ? 0 : b.y;
+        root.h = fluid ? H : b.h;
+      }
+      root.name = (doc.title || opts.name || 'Imported page') + ` — Canvas ${Math.round(root.w)}×${Math.round(root.h)}`;
+      hoistCanvasContent(root);
+    } else if (opts.cropScreen) {
+      root.h = Math.min(H, opts.height);
+    }
+
+    // Background-image url() layers become asset jobs too.
+    const bgJobs = [];
+    const visit = (n) => {
+      if (n.fills) n.fills.forEach((f) => { if (f.type === 'IMAGE' && f.url) bgJobs.push({ n, f }); });
+      (n.children || []).forEach(visit);
+    };
+    visit(root);
+    for (const job of bgJobs) {
+      const url = job.f.url;
+      if (!ctx.assets.has(url)) ctx.assets.set(url, { uses: [] });
+      ctx.assets.get(url).uses.push({ node: { w: job.n.w, h: job.n.h, fills: [], children: [], name: '' }, kind: 'bgfill', job });
+    }
+    const images = await resolveAssets(ctx, onProgress);
+    // Patch background fills from their proxy results.
+    for (const [, info] of ctx.assets) {
+      for (const use of info.uses) {
+        if (use.kind !== 'bgfill') continue;
+        const got = use.node.fills.find((f) => f.type === 'IMAGE');
+        if (got) { use.job.f.imageId = got.imageId; delete use.job.f.url; }
+        else { use.job.f.type = 'REMOVE'; }
+      }
+    }
+    const prune = (n) => {
+      if (n.fills) n.fills = n.fills.filter((f) => f.type !== 'REMOVE' && !(f.type === 'IMAGE' && !f.imageId));
+      (n.children || []).forEach(prune);
+    };
+    prune(root);
+    return { root, images, stats: ctx.stats };
+  }
+
+  /** Inside the rendered page: wait until fonts, images and scripts have settled. */
+  async function waitReady(opts) {
+    const doc = window.document;
+    try { await Promise.race([doc.fonts.ready, new Promise((r) => setTimeout(r, 5000))]); } catch (e) { /* ignore */ }
+    const pending = [...doc.images].filter((im) => !im.complete).map((im) => new Promise((r) => { im.addEventListener('load', r); im.addEventListener('error', r); }));
+    await Promise.race([Promise.all(pending), new Promise((r) => setTimeout(r, 8000))]);
+    await new Promise((r) => setTimeout(r, (opts && opts.wait) || 0));
+    window.scrollTo(0, 0);
+    return { scrollWidth: Math.max(doc.documentElement.scrollWidth, doc.body ? doc.body.scrollWidth : 0) };
+  }
+
+  return { extract, waitReady, parseColor };
+})();
+
+// When this script is injected into the page being imported, it answers the plugin UI's requests.
+// Running inside the page means no cross-frame DOM access is needed, whatever Figma's iframe sandboxing.
+if (window.__H2F_STAGE__) {
+  window.addEventListener('message', async (e) => {
+    const d = e.data;
+    if (!d || !d.h2f || e.source !== window.parent) return;
+    const answer = (msg) => window.parent.postMessage(msg, '*');
+    try {
+      let value;
+      if (d.h2f === 'ready') value = await Extractor.waitReady(d.opts);
+      else if (d.h2f === 'extract') {
+        value = await Extractor.extract(window, d.opts, (done, total) => answer({ h2fProgress: { done, total } }));
+      }
+      answer({ h2fReply: d.id, ok: true, value });
+    } catch (err) {
+      answer({ h2fReply: d.id, ok: false, error: (err && err.message) || String(err) });
+    }
+  });
+}
+</script>
+<script>
+/* =====================================================================
+ *  Asset handling: turn a set of local files into a self-contained page
+ * ===================================================================== */
+const Assets = (() => {
+  const isExternal = (u) => !u || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(u.trim());
+
+  function dirOf(path) { const i = path.lastIndexOf('/'); return i < 0 ? '' : path.slice(0, i + 1); }
+
+  function resolvePath(fromPath, rel, files) {
+    rel = rel.trim().replace(/[?#].*$/, '');
+    if (!rel) return null;
+    let decoded;
+    try { decoded = decodeURIComponent(rel); } catch (e) { decoded = rel; }
+    const candidates = [];
+    if (decoded.startsWith('/')) {
+      const root = fromPath.includes('/') ? fromPath.split('/')[0] + '/' : '';
+      candidates.push(root + decoded.slice(1), decoded.slice(1));
+    } else {
+      const u = new URL(decoded, 'http://x/' + dirOf(fromPath));
+      candidates.push(decodeURIComponent(u.pathname.slice(1)));
+    }
+    for (const c of candidates) if (files.has(c)) return c;
+    // Fallback: match by file name (handy when files were picked individually)
+    const base = decoded.split('/').pop();
+    for (const k of files.keys()) if (k.split('/').pop() === base) return k;
+    return null;
+  }
+
+  function readText(file) { return file.text(); }
+  function readDataUrl(file) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result); r.onerror = () => rej(r.error);
+      r.readAsDataURL(file);
+    });
+  }
+
+  async function inline(entryPath, files) {
+    const dataCache = new Map();
+    const toData = (p) => {
+      if (!dataCache.has(p)) dataCache.set(p, readDataUrl(files.get(p)));
+      return dataCache.get(p);
+    };
+    async function rewriteCssUrls(css, fromPath) {
+      const re = /url\(\s*(['"]?)([^'")]+)\1\s*\)/g;
+      const jobs = [];
+      css.replace(re, (m, q, u) => { jobs.push(u); return m; });
+      const map = new Map();
+      for (const u of jobs) {
+        if (isExternal(u) || map.has(u)) continue;
+        const p = resolvePath(fromPath, u, files);
+        if (p) map.set(u, await toData(p));
+      }
+      css = css.replace(re, (m, q, u) => map.has(u) ? `url("${map.get(u)}")` : m);
+      // @import "x.css"
+      const importRe = /@import\s+(?:url\()?\s*['"]([^'"]+)['"]\s*\)?\s*;/g;
+      const imports = [];
+      css.replace(importRe, (m, u) => { imports.push(u); return m; });
+      for (const u of imports) {
+        if (isExternal(u)) continue;
+        const p = resolvePath(fromPath, u, files);
+        if (!p) continue;
+        const inner = await rewriteCssUrls(await readText(files.get(p)), p);
+        css = css.split(new RegExp(`@import\\s+(?:url\\()?\\s*['"]${u.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]\\s*\\)?\\s*;`)).join(inner);
+      }
+      return css;
+    }
+
+    const html = await readText(files.get(entryPath));
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+
+    for (const link of [...doc.querySelectorAll('link[rel~="stylesheet"][href]')]) {
+      const href = link.getAttribute('href');
+      if (isExternal(href)) continue;
+      const p = resolvePath(entryPath, href, files);
+      if (!p) continue;
+      const style = doc.createElement('style');
+      if (link.media) style.media = link.media;
+      style.textContent = await rewriteCssUrls(await readText(files.get(p)), p);
+      link.replaceWith(style);
+    }
+    for (const s of [...doc.querySelectorAll('script[src]')]) {
+      const src = s.getAttribute('src');
+      if (isExternal(src)) continue;
+      const p = resolvePath(entryPath, src, files);
+      if (!p) continue;
+      s.removeAttribute('src');
+      s.textContent = await readText(files.get(p));
+    }
+    for (const s of doc.querySelectorAll('style')) s.textContent = await rewriteCssUrls(s.textContent, entryPath);
+    for (const el of doc.querySelectorAll('[style]')) {
+      el.setAttribute('style', await rewriteCssUrls(el.getAttribute('style'), entryPath));
+    }
+    const attrTargets = [
+      ['img', 'src'], ['source', 'src'], ['video', 'poster'], ['video', 'src'], ['audio', 'src'],
+      ['input', 'src'], ['image', 'href'], ['image', 'xlink:href'], ['link[rel~="icon"]', 'href'],
+      ['object', 'data'], ['embed', 'src'], ['iframe', 'src'],
+    ];
+    for (const [sel, attr] of attrTargets) {
+      for (const el of doc.querySelectorAll(sel)) {
+        const v = el.getAttribute(attr);
+        if (isExternal(v)) continue;
+        const p = resolvePath(entryPath, v, files);
+        if (p) el.setAttribute(attr, await toData(p));
+      }
+    }
+    for (const el of doc.querySelectorAll('img[srcset], source[srcset]')) {
+      const parts = el.getAttribute('srcset').split(',').map((s) => s.trim()).filter(Boolean);
+      const out = [];
+      for (const part of parts) {
+        const [u, ...d] = part.split(/\s+/);
+        if (isExternal(u)) { out.push(part); continue; }
+        const p = resolvePath(entryPath, u, files);
+        if (p) out.push([await toData(p), ...d].join(' '));
+      }
+      if (out.length) el.setAttribute('srcset', out.join(', ')); else el.removeAttribute('srcset');
+    }
+    return (/^\s*(<!--[\s\S]*?-->\s*)*<!doctype/i.test(html) ? '<!DOCTYPE html>\n' : '') + doc.documentElement.outerHTML;
+  }
+
+  return { inline };
+})();
+
+
+/* =====================================================================
+ *  Stage: renders the page in a hidden iframe with the extractor injected,
+ *  then talks to it by postMessage.
+ * ===================================================================== */
+const Stage = (() => {
+  const SRC = document.getElementById('h2f-extractor').textContent.replace(/<\/script/gi, '<\\/script');
+  const FREEZE = '*,*::before,*::after{animation-duration:0s!important;animation-delay:0s!important;animation-iteration-count:1!important;transition:none!important;caret-color:transparent!important}html{scroll-behavior:auto!important}';
+  const waiting = new Map();
+  let seq = 0, onProgress = null;
+  const frame = () => document.getElementById('stage');
+
+  window.addEventListener('message', (e) => {
+    const f = frame();
+    if (!f || e.source !== f.contentWindow) return;
+    const d = e.data;
+    if (!d) return;
+    if (d.h2fProgress && onProgress) onProgress(d.h2fProgress.done, d.h2fProgress.total);
+    if (d.h2fReply && waiting.has(d.h2fReply)) {
+      const w = waiting.get(d.h2fReply); waiting.delete(d.h2fReply); clearTimeout(w.timer);
+      if (d.ok) w.resolve(d.value); else w.reject(new Error(d.error));
+    }
+  });
+
+  function ask(cmd, opts, ms) {
+    return new Promise((resolve, reject) => {
+      const id = ++seq;
+      const timer = setTimeout(() => {
+        waiting.delete(id);
+        reject(new Error('The page stopped responding while being captured. If it runs heavy scripts, try turning off "Run JavaScript".'));
+      }, ms);
+      waiting.set(id, { resolve, reject, timer });
+      frame().contentWindow.postMessage({ h2f: cmd, id, opts }, '*');
+    });
+  }
+
+  function prepare(html, opts) {
+    const hasDoctype = /^\s*(<!--[\s\S]*?-->\s*)*<!doctype/i.test(html);
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    // A page's own CSP could block the injected extractor.
+    for (const m of doc.querySelectorAll('meta[http-equiv]')) if (/content-security-policy/i.test(m.getAttribute('http-equiv'))) m.remove();
+    if (!opts.scripts) {
+      for (const sc of doc.querySelectorAll('script')) sc.remove();
+      for (const el of doc.querySelectorAll('*')) {
+        for (const a of [...el.attributes]) if (/^on/i.test(a.name) || /^\s*javascript:/i.test(a.value)) el.removeAttribute(a.name);
+      }
+    }
+    // Eager-load lazy images, since the hidden frame never scrolls.
+    for (const el of doc.querySelectorAll('[loading="lazy"]')) el.setAttribute('loading', 'eager');
+    if (opts.freeze) { const st = doc.createElement('style'); st.textContent = FREEZE; doc.head.prepend(st); }
+    if (opts.baseUrl) { const b = doc.createElement('base'); b.href = opts.baseUrl; doc.head.prepend(b); }
+    const flag = doc.createElement('script'); flag.textContent = 'window.__H2F_STAGE__ = true;';
+    const ext = doc.createElement('script'); ext.textContent = SRC;
+    (doc.body || doc.documentElement).append(flag, ext);
+    return (hasDoctype ? '<!DOCTYPE html>\n' : '') + doc.documentElement.outerHTML;
+  }
+
+  async function render(html, opts) {
+    const f = frame();
+    f.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+    f.style.width = opts.width + 'px';
+    f.style.height = opts.height + 'px';
+    await new Promise((resolve) => {
+      let done = false;
+      const finish = () => { if (!done) { done = true; resolve(); } };
+      f.onload = finish;
+      setTimeout(finish, 15000);
+      f.srcdoc = prepare(html, opts);
+    });
+    return ask('ready', { wait: opts.wait }, 30000);
+  }
+
+  /** Render + extract for one device ('desktop' | 'tablet' | 'mobile' | 'canvas'). */
+  async function capture(html, device, opts, onStatus) {
+    const say = onStatus || (() => {});
+    const sizes = opts.sizes || {};
+    const NAMES = { desktop: 'Desktop', tablet: 'Tablet', mobile: 'Mobile', canvas: 'Canvas' };
+    const size = device === 'canvas' ? (sizes.desktop || [1440, 900]) : (sizes[device] || [1440, 900]);
+    let o = { ...opts, width: size[0], height: size[1], label: `${NAMES[device]} ${size[0]}`, fit: device === 'canvas' ? 'canvas' : null,
+      cropScreen: device !== 'canvas' && opts.cropScreen };
+    say(`Rendering ${NAMES[device]}…`);
+    let info = await render(html, o);
+    // Canvas: fixed-size designs wider than the screen (e.g. a 1920px slide) get a wider viewport.
+    if (device === 'canvas' && info.scrollWidth > o.width + 1 && info.scrollWidth <= 8000) {
+      o = { ...o, width: info.scrollWidth };
+      info = await render(html, o);
+    }
+    say(`Reading layout (${NAMES[device]})…`);
+    onProgress = (d, t) => say(`Loading images (${NAMES[device]})… ${d}/${t}`);
+    try {
+      const { sizes: _s, ...plain } = o; // only plain data crosses into the page
+      return await ask('extract', plain, 180000);
+    } finally { onProgress = null; }
+  }
+
+  return { capture };
+})();
+
+/* =====================================================================
+ *  UI wiring
+ * ===================================================================== */
+const $ = (id) => document.getElementById(id);
+const state = { tab: 'file', files: new Map(), entry: null, name: '' };
+
+function setStatus(msg, kind) {
+  const el = $('status'); el.textContent = msg || ''; el.className = kind || '';
+}
+
+function htmlFiles() { return [...state.files.keys()].filter((k) => /\.html?$/i.test(k)); }
+
+function refresh() {
+  const htmls = htmlFiles();
+  const sel = $('entrySelect');
+  $('entryField').classList.toggle('hidden', state.tab === 'paste' || htmls.length < 2);
+  if (htmls.length && !htmls.includes(state.entry)) {
+    state.entry = htmls.find((h) => /(^|\/)index\.html?$/i.test(h)) || htmls[0];
+  }
+  sel.innerHTML = htmls.map((h) => `<option ${h === state.entry ? 'selected' : ''}>${h.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</option>`).join('');
+  const ready = state.tab === 'paste' ? $('pasteInput').value.trim().length > 0 : !!state.entry;
+  $('go').disabled = !ready;
+  const others = state.files.size - htmls.length;
+  if (state.tab === 'file') $('fileLabel').textContent = state.entry ? state.entry.split('/').pop() + (others ? ` + ${others} asset${others > 1 ? 's' : ''}` : '') : 'Choose or drop an .html file';
+  if (state.tab === 'folder') $('folderLabel').textContent = state.entry ? `${state.entry.split('/')[0]} (${state.files.size} files)` : 'Choose a site folder';
+  for (const k of ['desktop', 'tablet', 'mobile']) {
+    const [w, h] = deviceSizes()[k];
+    document.querySelector(`[data-dim="${k}"]`).textContent = `${w}×${h}`;
+  }
+  $('go').textContent = selectedDevices().length > 1 ? `Import ${selectedDevices().length} frames` : 'Import to Figma';
+}
+
+function takeFiles(list, useRelative) {
+  state.files = new Map();
+  for (const f of list) state.files.set(useRelative && f.webkitRelativePath ? f.webkitRelativePath : f.name, f);
+  state.entry = null;
+  refresh();
+}
+
+for (const b of document.querySelectorAll('.tabs button')) {
+  b.onclick = () => {
+    state.tab = b.dataset.tab;
+    for (const x of document.querySelectorAll('.tabs button')) x.classList.toggle('on', x === b);
+    for (const p of document.querySelectorAll('[data-pane]')) p.classList.toggle('hidden', p.dataset.pane !== state.tab);
+    if (state.tab !== 'paste') { state.files = new Map(); state.entry = null; }
+    refresh();
+  };
+}
+$('dropFile').onclick = () => $('fileInput').click();
+$('dropFolder').onclick = () => $('folderInput').click();
+$('fileInput').onchange = (e) => takeFiles(e.target.files, false);
+$('folderInput').onchange = (e) => takeFiles(e.target.files, true);
+$('pasteInput').oninput = refresh;
+$('entrySelect').onchange = (e) => { state.entry = e.target.value; refresh(); };
+for (const [id, rel] of [['dropFile', false], ['dropFolder', true]]) {
+  const d = $(id);
+  d.ondragover = (e) => { e.preventDefault(); d.classList.add('over'); };
+  d.ondragleave = () => d.classList.remove('over');
+  d.ondrop = (e) => { e.preventDefault(); d.classList.remove('over'); takeFiles(e.dataTransfer.files, rel); };
+}
+
+const SETTINGS = ['optAL', 'optScripts', 'optFlatten', 'optAnim', 'optText', 'optCrop', 'optWait', 'optBase', 'optBridge', 'optPort',
+  'connApp', 'connServerPath', 'connNodePath',
+  'szDesktopW', 'szDesktopH', 'szTabletW', 'szTabletH', 'szMobileW', 'szMobileH'];
+const num = (id, def, min, max) => Math.min(max, Math.max(min, parseInt($(id).value, 10) || def));
+function deviceSizes() {
+  return {
+    desktop: [num('szDesktopW', 1440, 120, 8000), num('szDesktopH', 900, 100, 8000)],
+    tablet: [num('szTabletW', 768, 120, 8000), num('szTabletH', 1024, 100, 8000)],
+    mobile: [num('szMobileW', 390, 120, 8000), num('szMobileH', 844, 100, 8000)],
+  };
+}
+function selectedDevices() { return [...document.querySelectorAll('.device.on')].map((b) => b.dataset.device); }
+function saveSettings() {
+  const value = { devices: selectedDevices() };
+  for (const id of SETTINGS) value[id] = $(id).type === 'checkbox' ? $(id).checked : $(id).value;
+  parent.postMessage({ pluginMessage: { type: 'save-settings', value } }, '*');
+}
+function loadSettings(value) {
+  if (!value) return;
+  for (const id of SETTINGS) if (id in value) { if ($(id).type === 'checkbox') $(id).checked = !!value[id]; else $(id).value = value[id]; }
+  if (Array.isArray(value.devices) && value.devices.length) {
+    for (const b of document.querySelectorAll('.device')) b.classList.toggle('on', value.devices.includes(b.dataset.device));
+  }
+  refresh();
+}
+for (const b of document.querySelectorAll('.device')) {
+  b.onclick = () => {
+    b.classList.toggle('on');
+    if (!selectedDevices().length) b.classList.add('on'); // always keep one
+    refresh(); saveSettings();
+  };
+}
+for (const id of SETTINGS) $(id).addEventListener('change', () => { refresh(); saveSettings(); });
+
+/* ---------- one import at a time (manual or from an AI app) ---------- */
+let lock = Promise.resolve();
+function exclusive(fn) { const run = lock.then(fn, fn); lock = run.catch(() => {}); return run; }
+
+let reqSeq = 0;
+const mainPending = new Map();
+function buildInFigma(pages, preview) {
+  return new Promise((resolve, reject) => {
+    const requestId = 'ui' + (++reqSeq);
+    mainPending.set(requestId, { resolve, reject });
+    parent.postMessage({ pluginMessage: {
+      type: 'import', requestId, preview: !!preview,
+      pages: pages.map((p) => ({ root: p.root, images: p.images, stats: p.stats })),
+    } }, '*');
+  });
+}
+
+const DEVICE_ORDER = ['desktop', 'tablet', 'mobile', 'canvas'];
+async function capturePages(html, devices, opts, say) {
+  const pages = [];
+  for (const d of DEVICE_ORDER.filter((x) => devices.includes(x))) pages.push(await Stage.capture(html, d, opts, say));
+  return pages;
+}
+
+$('go').onclick = () => {
+  const devices = selectedDevices();
+  $('go').disabled = true;
+  exclusive(async () => {
+    try {
+      setStatus('Reading files…');
+      let html, name;
+      if (state.tab === 'paste') { html = $('pasteInput').value; name = 'Pasted HTML'; }
+      else { html = await Assets.inline(state.entry, state.files); name = state.entry.split('/').pop().replace(/\.html?$/i, ''); }
+      const opts = {
+        name,
+        scripts: $('optScripts').checked, flatten: $('optFlatten').checked, freeze: $('optAnim').checked,
+        textMode: $('optText').value, autoLayout: $('optAL').value, cropScreen: $('optCrop').checked,
+        wait: Math.max(0, +$('optWait').value || 0), baseUrl: $('optBase').value.trim(), sizes: deviceSizes(),
+      };
+      const pages = await capturePages(html, devices, opts, setStatus);
+      setStatus('Building layers in Figma…');
+      const res = await buildInFigma(pages, false);
+      setStatus(res.text, 'ok');
+    } catch (err) {
+      console.error(err);
+      setStatus((err && err.message) || String(err), 'err');
+    } finally { refresh(); }
+  });
+};
+
+/* ---------- MCP bridge (any AI app) ---------- */
+let PLUGIN_VERSION = '';   // sent by code.js, the single source of truth
+const Bridge = (() => {
+  let ws = null, retry = null, fileInfo = {}, busy = false, wantPort = null, serverVersion = null;
+  const sameRelease = (a, b) => !a || !b || a.split('.').slice(0, 2).join('.') === b.split('.').slice(0, 2).join('.');
+  const pill = () => $('bridgePill');
+  function show() {
+    const p = pill(), label = p.querySelector('span');
+    const on = ws && ws.readyState === 1;
+    const mismatch = on && serverVersion && PLUGIN_VERSION && !sameRelease(serverVersion, PLUGIN_VERSION);
+    p.classList.toggle('on', !!on && !mismatch); p.classList.toggle('busy', busy); p.classList.toggle('warn', !!mismatch);
+    label.textContent = !$('optBridge').checked ? 'AI off' : busy ? 'AI importing…' : mismatch ? 'Update MCP server' : on ? 'AI connected' : 'Waiting for AI app';
+    p.title = mismatch ? `The MCP server is v${serverVersion} but the plugin is v${PLUGIN_VERSION}. Run the installer from the new plugin folder, then restart your AI app.` :
+      on ? `Connected to MCP server v${serverVersion || '?'} on port ${wantPort}. Click for setup.` :
+      `Not connected yet. Click to connect an AI app (port ${$('optPort').value}).`;
+    const cs = $('connStatus');
+    cs.classList.toggle('on', !!on && !mismatch);
+    cs.querySelector('span').textContent = !$('optBridge').checked ? 'AI connections are turned off in Options.' :
+      mismatch ? `Connected, but the MCP server (v${serverVersion}) doesn't match this plugin (v${PLUGIN_VERSION}). Run the installer from this plugin's folder.` :
+      on ? `Connected — an AI app is running the HTML → Figma server (v${serverVersion || '?'}). You're all set.` :
+      'Waiting for an AI app… After setup, restart the app; this turns green once it is running.';
+  }
+  function sendRaw(obj) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(obj)); }
+  function info() { return { ...fileInfo, version: PLUGIN_VERSION }; }
+  function schedule() { clearTimeout(retry); if ($('optBridge').checked) retry = setTimeout(connect, 2500); }
+  function connect() {
+    clearTimeout(retry);
+    if (!$('optBridge').checked) { show(); return; }
+    const port = parseInt($('optPort').value, 10) || 3055;
+    if (ws && ws.readyState <= 1 && port === wantPort) return;
+    if (ws) { try { ws.onclose = null; ws.close(); } catch (e) { /* ignore */ } ws = null; }
+    wantPort = port;
+    try { ws = new WebSocket(`ws://localhost:${port}`); } catch (e) { schedule(); show(); return; }
+    ws.onopen = () => { sendRaw({ type: 'hello', info: info() }); show(); };
+    ws.onclose = () => { ws = null; serverVersion = null; show(); schedule(); };
+    ws.onerror = () => { /* onclose follows */ };
+    ws.onmessage = (e) => {
+      let m; try { m = JSON.parse(e.data); } catch (err) { return; }
+      if (m.type === 'welcome') { serverVersion = m.version || null; Connect.setServerInfo(m.serverPath, m.nodePath); show(); }
+      if (m.type === 'import') runJob(m);
+    };
+    show();
+  }
+  function disconnect() { clearTimeout(retry); if (ws) { ws.onclose = null; try { ws.close(); } catch (e) { /* ignore */ } ws = null; } show(); }
+  const b64ToBytes = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+
+  function runJob(m) {
+    const { id, payload } = m;
+    const say = (text) => { setStatus('AI: ' + text); sendRaw({ type: 'progress', id, message: text }); };
+    exclusive(async () => {
+      busy = true; show();
+      try {
+        const o = payload.options || {};
+        let html = payload.html || '';
+        if (payload.files) {
+          say('Reading files…');
+          const map = new Map();
+          for (const [k, b64] of Object.entries(payload.files)) map.set(k, new File([b64ToBytes(b64)], k.split('/').pop()));
+          html = await Assets.inline(payload.entry, map);
+        }
+        if (!html.trim()) throw new Error('The HTML was empty.');
+        const sizes = { ...deviceSizes(), ...(o.sizes || {}) };
+        const opts = {
+          name: o.name || 'HTML', scripts: o.scripts !== false, flatten: o.flatten !== false, freeze: o.freeze !== false,
+          textMode: o.textMode || 'paragraph', autoLayout: o.autoLayout || 'flex', cropScreen: !!o.cropScreen,
+          wait: Number.isFinite(o.wait) ? o.wait : 400, baseUrl: o.baseUrl || '', sizes,
+        };
+        const devices = (o.devices && o.devices.length ? o.devices : ['desktop']).filter((d) => DEVICE_ORDER.includes(d));
+        const pages = await capturePages(html, devices, opts, say);
+        say('Building layers in Figma…');
+        const res = await buildInFigma(pages, o.preview !== false);
+        setStatus('AI: ' + res.text, 'ok');
+        sendRaw({ type: 'result', id, ok: true, result: res.result });
+      } catch (err) {
+        console.error(err);
+        const msg = (err && err.message) || String(err);
+        setStatus('AI import failed: ' + msg, 'err');
+        sendRaw({ type: 'result', id, ok: false, error: msg });
+      } finally { busy = false; show(); }
+    });
+  }
+  function setFileInfo(i) { fileInfo = i || {}; sendRaw({ type: 'info', info: info() }); }
+  function setVersion(v) { PLUGIN_VERSION = v; $('ver').textContent = 'v' + v; sendRaw({ type: 'info', info: info() }); show(); }
+  return { connect, disconnect, show, setFileInfo, setVersion };
+})();
+/* ---------- "Connect AI app" panel ---------- */
+const Connect = (() => {
+  const SERVER = 'html-to-figma';
+  const APPS = {
+    'claude-desktop': { fmt: 'json', key: 'mcpServers',
+      where: 'In Claude: <b>Settings → Developer → Edit Config</b>. Paste this into the file (if it already has "mcpServers", add just the "html-to-figma" part inside it). Save, then quit Claude completely and reopen it.' },
+    'claude-code': { fmt: 'cli', where: 'Run this once in a terminal. It works in every project:' },
+    'chatgpt': { fmt: 'toml', where: 'Add this to <b>~/.codex/config.toml</b> (ChatGPT desktop and Codex share it), then restart the app.',
+      extra: (n, p) => `In the ChatGPT app you can also use Settings → MCP servers → Add server → STDIO, with command ${n} and argument ${p}.` },
+    'cursor': { fmt: 'json', key: 'mcpServers', where: 'Paste into <b>~/.cursor/mcp.json</b> (or Cursor Settings → MCP → Add new server), then restart Cursor.' },
+    'vscode': { fmt: 'json', key: 'servers', where: 'Command Palette → <b>MCP: Open User Configuration</b>, paste, save, then start it from the MCP view.' },
+    'windsurf': { fmt: 'json', key: 'mcpServers', where: 'Paste into <b>~/.codeium/windsurf/mcp_config.json</b>, then restart Windsurf.' },
+    'gemini': { fmt: 'json', key: 'mcpServers', where: 'Add to <b>~/.gemini/settings.json</b> (keep what\'s already there), then start a new Gemini CLI session.' },
+    'lmstudio': { fmt: 'json', key: 'mcpServers', where: 'In LM Studio: <b>Program</b> tab (right sidebar) → <b>Install → Edit mcp.json</b>, paste, save.' },
+    'other': { fmt: 'plain', where: 'Any app that supports local ("stdio") MCP servers can connect. Give it these values:' },
+  };
+  const PLACEHOLDER = '/PATH/TO/html-to-figma/mcp-server/html-to-figma-mcp.mjs';
+  const vals = () => ({ node: $('connNodePath').value || 'node', server: $('connServerPath').value.trim() || PLACEHOLDER });
+  const q = (s) => JSON.stringify(s);
+  function snippet(id) {
+    const a = APPS[id], { node, server } = vals();
+    if (a.fmt === 'cli') return `claude mcp add --scope user --transport stdio ${SERVER} -- ${q(node)} ${q(server)}`;
+    if (a.fmt === 'toml') return `[mcp_servers.${SERVER}]\ncommand = ${q(node)}\nargs = [${q(server)}]`;
+    if (a.fmt === 'plain') return `Name:      ${SERVER}\nType:      stdio (local command)\nCommand:   ${node}\nArguments: ${server}`;
+    const entry = a.key === 'servers' ? { type: 'stdio', command: node, args: [server] } : { command: node, args: [server] };
+    return JSON.stringify({ [a.key]: { [SERVER]: entry } }, null, 2);
+  }
+  function render() {
+    const id = $('connApp').value, a = APPS[id], { node, server } = vals();
+    $('connWhere').innerHTML = a.where;
+    $('connSnippet').textContent = snippet(id);
+    $('connExtra').textContent = a.extra ? a.extra(node, server) : '';
+    $('connExtra').classList.toggle('hidden', !a.extra);
+    const known = !!$('connServerPath').value.trim();
+    $('connPathHint').textContent = $('connNodePath').value
+      ? 'Filled in automatically from the AI app that is already connected.'
+      : known ? 'Using the location you entered.'
+      : 'It\'s inside the plugin folder, in mcp-server. Mac: right-click it, hold Option, "Copy … as Pathname". Windows: Shift + right-click → "Copy as path".';
+  }
+  async function copy() {
+    const text = $('connSnippet').textContent;
+    let ok = false;
+    try { await navigator.clipboard.writeText(text); ok = true; } catch (e) { /* fall back */ }
+    if (!ok) {
+      const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      ta.remove();
+    }
+    $('connCopy').textContent = ok ? 'Copied' : 'Select & copy';
+    setTimeout(() => { $('connCopy').textContent = 'Copy'; }, 1500);
+  }
+  function open() { $('mainView').classList.add('hidden'); $('connectView').classList.remove('hidden'); render(); }
+  function close() { $('connectView').classList.add('hidden'); $('mainView').classList.remove('hidden'); }
+  function setServerInfo(serverPath, nodePath) {
+    if (!serverPath) return;
+    const changed = $('connServerPath').value !== serverPath || $('connNodePath').value !== (nodePath || '');
+    $('connServerPath').value = serverPath; $('connNodePath').value = nodePath || '';
+    if (changed) saveSettings();
+    render();
+  }
+  $('openConnect').onclick = open;
+  $('bridgePill').onclick = open;
+  $('bridgePill').onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') open(); };
+  $('connBack').onclick = close;
+  $('connCopy').onclick = copy;
+  $('connApp').addEventListener('change', render);
+  $('connServerPath').addEventListener('input', () => { $('connNodePath').value = ''; render(); });
+  return { open, close, render, setServerInfo };
+})();
+
+$('optBridge').addEventListener('change', () => ($('optBridge').checked ? Bridge.connect() : Bridge.disconnect()));
+$('optPort').addEventListener('change', () => Bridge.connect());
+
+window.onmessage = (e) => {
+  const stageEl = document.getElementById('stage');
+  if (stageEl && e.source === stageEl.contentWindow) return; // never trust the imported page
+  const msg = e.data && e.data.pluginMessage;
+  if (!msg) return;
+  if (msg.type === 'progress') setStatus(msg.text);
+  if ((msg.type === 'done' || msg.type === 'error') && msg.requestId && mainPending.has(msg.requestId)) {
+    const p = mainPending.get(msg.requestId); mainPending.delete(msg.requestId);
+    if (msg.type === 'done') p.resolve({ text: msg.text, result: msg.result }); else p.reject(new Error(msg.text));
+    return;
+  }
+  if (msg.type === 'done') { setStatus(msg.text, 'ok'); refresh(); }
+  if (msg.type === 'error') { setStatus(msg.text, 'err'); refresh(); }
+  if (msg.type === 'settings') { loadSettings(msg.value); Connect.render(); Bridge.connect(); }
+  if (msg.type === 'file-info') Bridge.setFileInfo(msg.info);
+  if (msg.type === 'version') Bridge.setVersion(msg.version);
+};
+
+// Exposed for automated testing outside Figma.
+window.__H2F = { Extractor, Stage, Assets, Bridge, Connect };
+refresh();
+Bridge.connect();
+parent.postMessage({ pluginMessage: { type: 'get-file-info' } }, '*'); // version + file info, once the panel is ready
+</script>
+</body>
+</html>

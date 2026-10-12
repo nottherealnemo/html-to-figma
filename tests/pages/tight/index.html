@@ -1,0 +1,35 @@
+<!doctype html><html><head><title>Checkup desk</title><style>
+body{margin:0;font:14px/20px Inter,sans-serif;background:#f4f5f7;color:#111}
+.app{display:flex;width:1100px}
+.side{width:200px;background:#fff;padding:16px;display:flex;flex-direction:column;gap:12px}
+.tb-app{display:flex;align-items:center;gap:8px}.tb-app i{width:22px;height:22px;background:#2337ff;border-radius:6px;display:block}
+.tb-app span{font-size:17px;font-weight:500;display:block}
+.user{display:flex;flex-direction:column}.user div{font-size:11px;color:#777}
+.main{flex:1;padding:24px;display:flex;flex-direction:column;gap:20px}
+.tabs{display:flex;gap:2px;background:#eee;border-radius:8px;padding:2px}
+.tabs span{padding:4px 10px;border-radius:6px;font-size:13px;display:block}.tabs .on{background:#fff;font-weight:500}
+.card{background:#2337ff;color:#fff;border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:16px;width:480px}
+.head{display:flex;justify-content:space-between;align-items:flex-start}
+.title{font-size:20px;line-height:24px}
+.sub{display:flex;gap:16px;font-size:13px;color:#bfc6ff;margin-top:6px}
+.chip{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);border-radius:999px;padding:6px 12px;font-size:12px}
+.chip .num{font-family:ui-monospace,monospace}
+.metric{display:flex;align-items:baseline;gap:4px}.metric .big{font-size:56px;line-height:56px;font-weight:300}.metric .unit{font-size:22px}
+.label{display:flex;justify-content:space-between;font-size:12px;color:#555}
+.center{text-align:center;font-size:13px;color:#666}
+.rows{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;gap:12px;align-items:center;background:#fff;border-radius:10px;padding:10px 14px}
+.row .name{flex:1}.row .eta{font-size:12px;color:#777}
+</style></head><body><div class="app">
+<div class="side"><div class="tb-app"><i></i><span>Clinic Data Desk</span></div>
+<div class="user"><span>Misaki Sato</span><div>Nurse, Room 2</div></div></div>
+<div class="main">
+<div class="tabs" style="align-self:flex-start"><span class="on">All day</span><span>AM</span><span>PM</span></div>
+<div class="card"><div class="head"><div><div class="title">Incoming data</div><div class="sub"><span>9600 bps</span><span>Body composition analyzer BC-01</span></div></div>
+<span class="chip"><span class="num">COM3</span></span></div>
+<div class="metric"><span class="big">72.6</span><span class="unit">kg</span></div></div>
+<div class="label" style="width:300px"><span>Reading stability</span><span class="num">92%</span></div>
+<div class="center">Step 3 · Today's measurements</div>
+<div class="rows"><div class="row"><span class="name">Height &amp; weight</span><span class="eta">Est. 2 min</span></div>
+<div class="row"><span class="name">Body composition</span><span class="eta">Est. 3 min</span></div></div>
+</div></div></body></html>
