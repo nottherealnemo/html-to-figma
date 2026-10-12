@@ -146,3 +146,7 @@ scripts/build-release.sh          builds the installable zip into dist/
    changelog entry as notes, **Publish**. GitHub builds the installable zip and attaches it to the release within a
    minute or two (it refuses if the tag doesn't match the version in `code.js`). Users update by downloading that zip
    and unzipping it over their folder.
+
+## License
+
+MIT. See `LICENSE`.
