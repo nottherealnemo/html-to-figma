@@ -131,6 +131,7 @@ Browser-only chat apps can't run local tools; they need a desktop app.
 | Port 3055 busy (non-HTML-to-Figma program) | Set `HTML_TO_FIGMA_PORT` in the app's server env and the same port in plugin Options → MCP bridge port. |
 | Several AI apps connected | Fine. They share one connection automatically. |
 | Folder was moved | Re-run the installer. |
+| AI says it can't reach the plugin / keeps asking you to download the file | Its chat is linked to a different computer than the one running Figma → start a new chat from the Claude desktop app on the computer with the plugin. |
 | `File not found on the user's computer` | The HTML is in the AI's sandbox, not on their PC → send it with `html` or `upload_file_for_import`. |
 
 Version: see `CHANGELOG.md` (the plugin shows its version next to its title).

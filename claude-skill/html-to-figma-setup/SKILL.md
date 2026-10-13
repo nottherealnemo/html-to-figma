@@ -77,6 +77,7 @@ you do it with computer control if they agree.
 | `spawn node ENOENT` / server failed to start | Run the installer again (it writes the full path to Node). |
 | Plugins → Development missing | They're in browser Figma → use the desktop app. |
 | Folder moved | Run the installer again. |
+| AI says it can't reach the plugin / keeps asking you to download the file | Its chat is linked to a different computer than the one running Figma → start a new chat from the Claude desktop app on the computer with the plugin. |
 | `File not found on the user's computer` when importing | The HTML is in your sandbox, not on their PC → if you can copy files to their computer, copy it into the plugin's `inbox` folder and import by `path` (no tokens); else use a `url`; send the code as text (`html` / `upload_file_for_import`) only as a last resort. |
 | Port 3055 used by another program | Set env `HTML_TO_FIGMA_PORT` for the server and the same port in plugin Options → MCP bridge port. |
 | Remove it | `node mcp-server/html-to-figma-mcp.mjs remove`; in Figma, Plugins → Development → Manage plugins in development → remove it. |
