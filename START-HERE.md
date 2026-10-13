@@ -112,14 +112,15 @@ VS Code "MCP: Open User Configuration" (key `servers`, add `"type": "stdio"`) ·
 `~/.codex/config.toml` (`[mcp_servers.html-to-figma]`) · LM Studio: Program tab → Install → Edit mcp.json.
 Browser-only chat apps can't run local tools; they need a desktop app.
 
-### Sending HTML to Figma (once connected)
-- **Have the HTML code?** Send it directly: `import_html_to_figma({html: "<!doctype html>…"})`. Images and CSS
-  it uses by relative path go in `files` (text as text, images as `data:` URIs). No file on their computer is needed.
-- **Long page (over ~40 KB)?** Send it in parts with `upload_file_for_import` (`append: true` after the first part,
-  same `upload_id` each time; images/CSS as extra files), then `import_html_to_figma({upload_id})`.
-- **`path` is only for files on their computer** (where Figma runs). A file in your own sandbox or workspace
-  isn't there: send its contents instead.
-- **Hosted page?** `url` is the cheapest: nothing has to pass through the conversation.
+### Sending HTML to Figma (once connected), cheapest first
+1. **File on their computer** → `import_html_to_figma({path})`. Images/CSS/fonts come along. No tokens.
+2. **File in your own sandbox, and you can copy files to their computer** (e.g. Claude with this chat linked to
+   their computer) → copy the .html and its assets into a folder there (the `inbox` folder next to this file is a
+   good place), then import with `path`. The file goes over the file transfer, not through the conversation.
+3. **Page is online** → `import_html_to_figma({url})`. Its same-site images/CSS/fonts are fetched too. No tokens.
+4. **Only as a last resort, send the code itself:** `html` (+ `files` for assets), or for long pages
+   `upload_file_for_import` in ~40 KB parts and then `import_html_to_figma({upload_id})`. Every character passes
+   through the conversation, so a big page costs a lot of tokens.
 
 ### Troubleshooting map
 | Symptom | Cause → fix |

@@ -4,6 +4,13 @@ The version shows in the plugin window's title bar and next to "HTML → Figma" 
 The plugin and the MCP server always share a version number; if they don't match, the plugin's
 header pill says **Update MCP server**.
 
+## 1.7.1 — 2026-10-13
+Cheaper ways for AI apps to hand over a page, without sending the code through the chat:
+- **`url` imports bring their images, CSS and fonts along** (fetched on your computer), so a page the AI
+  put online comes in complete, even from sites that block cross-origin requests.
+- **`inbox` folder:** an AI that can copy files to your computer drops the page there and imports it by `path`.
+- AI apps are told to prefer these, and to send code as text only as a last resort.
+
 ## 1.7.0 — 2026-10-13
 AI apps no longer need the HTML saved on your computer.
 - **Send HTML code directly.** `import_html_to_figma` takes the code in `html`, plus the images and CSS it uses in

@@ -78,6 +78,7 @@ if '--quick' not in sys.argv:
         check('page errors -> []' in e2e, 'mcp: page errors\n' + e2e[-800:]),
         check('upload import -> False' in e2e and 'upload layers match path import -> True' in e2e, 'mcp: chunked upload import failed\n' + e2e[-1200:]),
         check('html+files import -> False' in e2e and 'html+files layers match path import -> True' in e2e, 'mcp: html + files import failed\n' + e2e[-1200:]),
+        check('url import -> False' in e2e and 'url layers match path import -> True' in e2e, 'mcp: url import with assets failed\n' + e2e[-1200:]),
         check('missing path hint -> True' in e2e, 'mcp: missing-path error does not point to uploads'),
     ])
     rows.append(f'{"PASS" if ok else "FAIL"}  MCP round trip, uploads, origin check, version warning')

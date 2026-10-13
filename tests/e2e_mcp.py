@@ -131,6 +131,14 @@ with sync_playwright() as p:
     r, _ = rpc('tools/call', {'name': 'import_html_to_figma', 'arguments': {'html': html, 'files': assets, 'devices': ['desktop', 'mobile'], 'preview': False}}, pump=pump)
     print('html+files import ->', r['result'].get('isError', False), '|', text_of(r).splitlines()[0])
     print('html+files layers match path import ->', layers(text_of(r)) == path_layers)
+    import http.server, functools
+    httpd = http.server.ThreadingHTTPServer(('127.0.0.1', 0), functools.partial(http.server.SimpleHTTPRequestHandler, directory=os.path.join(HERE, 'pages')))
+    httpd.RequestHandlerClass.log_message = lambda *a: None
+    threading.Thread(target=httpd.serve_forever, daemon=True).start()
+    r, _ = rpc('tools/call', {'name': 'import_html_to_figma', 'arguments': {'url': f'http://127.0.0.1:{httpd.server_port}/site/index.html', 'devices': ['desktop', 'mobile'], 'preview': False}}, pump=pump)
+    print('url import ->', r['result'].get('isError', False), '|', text_of(r).splitlines()[0])
+    print('url layers match path import ->', layers(text_of(r)) == path_layers, layers(text_of(r)))
+    httpd.shutdown()
     r, _ = rpc('tools/call', {'name': 'import_html_to_figma', 'arguments': {'path': '/home/sandbox/not-here/page.html'}})
     print('missing path hint ->', 'upload_file_for_import' in text_of(r))
     print('mock problems ->', pg.evaluate('window.__problems'), pg.evaluate('window.__crash'), '| page errors ->', errs)

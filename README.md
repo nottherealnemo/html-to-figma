@@ -63,7 +63,7 @@ Figma while the AI works; the header badge says **AI connected** when ready.
 
 | Tool | What it does |
 |---|---|
-| `import_html_to_figma` | Imports HTML code sent directly (`html`, with optional `files` for its images/CSS), an `upload_id`, a file `path` on the computer running Figma (its images/CSS/fonts are bundled automatically), or a `url`. Accepts `devices` (desktop / tablet / mobile / canvas), `auto_layout`, `crop_to_screen`, `screen_sizes`, `text_layers`, `run_scripts`, `wait_ms` and more. Returns frame names, node IDs, sizes and PNG previews, so the AI can check the result. |
+| `import_html_to_figma` | Imports a file `path` on the computer running Figma (its images/CSS/fonts are bundled automatically), a `url` (its same-site images/CSS/fonts are fetched too), HTML code sent directly (`html`, with optional `files`), or an `upload_id`. Accepts `devices` (desktop / tablet / mobile / canvas), `auto_layout`, `crop_to_screen`, `screen_sizes`, `text_layers`, `run_scripts`, `wait_ms` and more. Returns frame names, node IDs, sizes and PNG previews, so the AI can check the result. |
 | `upload_file_for_import` | Sends long HTML in parts, plus its images/CSS/fonts, so AI apps whose files aren't on your computer (cloud sandboxes, web workspaces) can still import them. |
 | `figma_bridge_status` | Says whether the plugin is connected and which Figma file/page imports will land in. |
 
@@ -74,6 +74,10 @@ Notes:
 - Turn AI access off any time with **Options → Let AI apps import (MCP)**.
 - Different port: set `HTML_TO_FIGMA_PORT` in the server's environment and the same port under **Options → MCP bridge port**.
 - Large pages: raise the time limit with `HTML_TO_FIGMA_TIMEOUT_MS` (default 180000).
+- **Cheapest way for an AI to send a page:** a file on your computer (`path`) or a link (`url`). Neither passes the
+  page through the conversation. An AI that works in its own sandbox but can copy files to your computer (Claude
+  with the chat linked to your computer, for example) copies the file into the `inbox` folder and imports it by
+  `path`. Sending the code as text (`html` / `upload_file_for_import`) works anywhere but costs tokens.
 - `claude-skill/html-to-figma-setup/SKILL.md` is a Claude skill that teaches Claude to guide setup on a new
   computer or account.
 

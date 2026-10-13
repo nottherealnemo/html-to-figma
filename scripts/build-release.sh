@@ -7,7 +7,7 @@ SERVER=$(sed -n "s/^const VERSION = '\([0-9.]*\)'.*/\1/p" mcp-server/html-to-fig
 if [ "$VERSION" != "$SERVER" ]; then echo "Version mismatch: plugin $VERSION, MCP server $SERVER"; exit 1; fi
 grep -q "## $VERSION " CHANGELOG.md || { echo "CHANGELOG.md has no entry for $VERSION"; exit 1; }
 rm -rf dist && mkdir -p dist/html-to-figma
-cp -r manifest.json code.js ui.html mcp-server example claude-skill README.md START-HERE.md CHANGELOG.md LICENSE \
+cp -r manifest.json code.js ui.html mcp-server example claude-skill README.md START-HERE.md CHANGELOG.md LICENSE inbox \
   "Install - Mac.command" "Install - Windows.cmd" dist/html-to-figma/
 chmod +x "dist/html-to-figma/Install - Mac.command"
 (cd dist && zip -qrX "html-to-figma-v$VERSION.zip" html-to-figma)

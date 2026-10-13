@@ -30,7 +30,7 @@ import readline from 'node:readline';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const VERSION = '1.7.0'; // keep in step with PLUGIN_VERSION in code.js
+const VERSION = '1.7.1'; // keep in step with PLUGIN_VERSION in code.js
 const PORT = parseInt(process.env.HTML_TO_FIGMA_PORT || '3055', 10);
 const TIMEOUT_MS = parseInt(process.env.HTML_TO_FIGMA_TIMEOUT_MS || '180000', 10);
 const MAX_ASSET_BYTES = 60 * 1024 * 1024;
@@ -360,6 +360,46 @@ function collectFiles(entry) {
   return { files, entry: path.relative(base, entry).split(path.sep).join('/'), count: found.size, bytes: total };
 }
 
+// Same idea for a web page: fetch the page's same-site images, CSS and fonts on this computer, so the plugin
+// doesn't depend on the site allowing cross-origin requests.
+async function collectRemote(pageUrl, html, progress) {
+  const keyOf = (url) => decodeURIComponent(url.pathname.replace(/^\/+/, '')) || 'index.html';
+  let entry = keyOf(pageUrl);
+  if (entry.endsWith('/')) entry += 'index.html';
+  else if (!/\.html?$/i.test(entry)) entry += '.html'; // "/about" -> "about.html", same folder for relative links
+  const files = { [entry]: Buffer.from(html, 'utf8').toString('base64') };
+  const seen = new Set([pageUrl.href]);
+  const queue = [[pageUrl, html]];
+  let total = html.length, fetched = 0;
+  while (queue.length) {
+    const [from, text] = queue.shift();
+    const refs = new Set();
+    for (const re of REF_PATTERNS) { re.lastIndex = 0; let m; while ((m = re.exec(text))) refs.add(m[1]); }
+    for (const m of text.matchAll(/\ssrcset\s*=\s*["']([^"']+)["']/gi)) for (const part of m[1].split(',')) refs.add(part.trim().split(/\s+/)[0]);
+    for (const ref of refs) {
+      if (!ref || /^(?:data|blob|javascript|mailto|tel|about):/i.test(ref.trim()) || ref.trim().startsWith('#')) continue;
+      let url;
+      try { url = new URL(ref.trim(), from); } catch (e) { continue; }
+      url.hash = '';
+      if (url.origin !== pageUrl.origin || seen.has(url.href) || fetched >= 300) continue;
+      seen.add(url.href);
+      try {
+        const r = await fetch(url, { redirect: 'follow', headers: { 'user-agent': 'Mozilla/5.0 (html-to-figma MCP)' } });
+        if (!r.ok) continue;
+        const buf = Buffer.from(await r.arrayBuffer());
+        if (total + buf.length > MAX_ASSET_BYTES) { log('asset limit reached, skipping', url.href); continue; }
+        const type = r.headers.get('content-type') || '';
+        if (/text\/html/i.test(type) && !/\.(css|svg)$/i.test(url.pathname)) continue; // links to other pages
+        total += buf.length; fetched++;
+        files[keyOf(url)] = buf.toString('base64');
+        if (/css|svg/i.test(type) || /\.(css|svg)$/i.test(url.pathname)) queue.push([url, buf.toString('utf8')]);
+        if (progress && fetched % 10 === 0) progress(`Fetched ${fetched} files…`);
+      } catch (e) { /* unreachable asset: the plugin falls back to loading it itself */ }
+    }
+  }
+  return { files, entry, count: fetched + 1, bytes: total };
+}
+
 /* ================================================================== */
 /* MCP tools                                                           */
 /* ================================================================== */
@@ -374,12 +414,15 @@ const TOOLS = [
     description:
       'Render an HTML page and rebuild it as editable Figma layers (frames, text, images, vectors, Auto Layout) in the ' +
       'Figma file the user has open. Use this when the user wants a web page, HTML mockup, email template, or HTML you ' +
-      'generated turned into a Figma design. Provide exactly one source: `html` (the HTML code itself as a string, ' +
-      'optionally with `files` for images/CSS it references by relative path), `upload_id` (HTML sent in parts with ' +
-      'upload_file_for_import; use this when the code is too long for one call, roughly over 40 KB), `path` (an ' +
-      'absolute path to an .html file ON THE USER\'S COMPUTER, where Figma runs; its images, CSS and fonts are included ' +
-      'automatically), or `url` (an http(s) page). If the HTML is in your own workspace or sandbox rather than on the ' +
-      'user\'s computer, `path` will not find it: send the code with `html` or upload_file_for_import instead. Choose `devices` for the frames to create: desktop/tablet/mobile lay the page out at ' +
+      'generated turned into a Figma design. Provide exactly one source, cheapest first: ' +
+      '`path` (an absolute path to an .html file ON THE USER\'S COMPUTER, where Figma runs; its images, CSS and fonts ' +
+      'are included automatically; costs no tokens), `url` (an http(s) page; its images and CSS are fetched too; costs ' +
+      'no tokens), `html` (the HTML code itself as a string, optionally with `files` for assets it references by ' +
+      'relative path), or `upload_id` (code sent in parts with upload_file_for_import, for code over ~40 KB). ' +
+      'If the file is in your own sandbox or workspace, `path` will not find it. Before sending the code as text, check ' +
+      'whether you have a tool that copies files to the user\'s computer (for example a linked-computer or device ' +
+      'file-transfer tool): if so, copy the file and its assets into a folder there and import with `path`, which avoids ' +
+      'putting the whole page through the conversation. Choose `devices` for the frames to create: desktop/tablet/mobile lay the page out at ' +
       'that screen size; canvas sizes the frame to the content itself (best for posters, cards, slides, social images). ' +
       'Requires the "HTML to Figma Importer" plugin to be open in Figma desktop; call figma_bridge_status first if unsure. ' +
       'Returns the created frame names, node IDs and sizes, plus PNG previews of the result.',
@@ -394,7 +437,7 @@ const TOOLS = [
         upload_id: { type: 'string', description: 'Import files sent earlier with upload_file_for_import.' },
         entry: { type: 'string', description: 'With `upload_id`: which uploaded .html file to import. Default index.html, or the only HTML file.' },
         path: { type: 'string', description: 'Absolute path to an .html/.htm file on the user\'s computer (the one running Figma). Not for files in your own sandbox.' },
-        url: { type: 'string', description: 'An http(s) URL to fetch and import. Relative assets load from that site.' },
+        url: { type: 'string', description: 'An http(s) URL to fetch and import. Images, CSS and fonts on the same site are fetched with it.' },
         devices: { type: 'array', items: { type: 'string', enum: DEVICE_ENUM }, minItems: 1, uniqueItems: true, description: 'Frames to create, one per device. Default ["desktop"].' },
         auto_layout: { type: 'string', enum: ['flex', 'all', 'off'], description: 'flex (default): flexbox & grid containers become Auto Layout. all: also stacked block containers. off: absolute positions only.' },
         crop_to_screen: { type: 'boolean', description: 'Desktop/tablet/mobile frames use the screen height instead of the full page height. Default false.' },
@@ -803,10 +846,12 @@ async function toolImport(args, progress) {
     progress && progress('Fetching page…');
     const res = await fetch(u, { redirect: 'follow', headers: { 'user-agent': 'Mozilla/5.0 (html-to-figma MCP)' } });
     if (!res.ok) throw new ToolError(`Fetching ${u} failed: HTTP ${res.status}`);
-    payload.html = await res.text();
-    payload.options.baseUrl = args.base_url || res.url || u.href;
+    const page = new URL(res.url || u.href);
+    const bundle = await collectRemote(page, await res.text(), progress);
+    payload.files = bundle.files; payload.entry = bundle.entry;
+    payload.options.baseUrl = args.base_url || page.href;
     payload.options.name = args.name || u.hostname;
-    sourceText = u.href;
+    sourceText = `${u.href} (${bundle.count} file${bundle.count > 1 ? 's' : ''}, ${kb(bundle.bytes)})`;
   } else if (sources[0] === 'upload_id') {
     sweepUploads();
     const up = uploads.get(args.upload_id);

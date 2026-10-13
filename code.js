@@ -2,7 +2,7 @@
 // Receives a layer tree measured from the rendered HTML (see ui.html) and builds Figma nodes.
 
 // Bump on every release (and match mcp-server/html-to-figma-mcp.mjs). See CHANGELOG.md.
-const PLUGIN_VERSION = '1.7.0';
+const PLUGIN_VERSION = '1.7.1';
 
 figma.showUI(__html__, { width: 340, height: 640, themeColors: true, title: `HTML to Figma v${PLUGIN_VERSION}` });
 figma.ui.postMessage({ type: 'version', version: PLUGIN_VERSION });
