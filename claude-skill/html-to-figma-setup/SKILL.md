@@ -77,6 +77,7 @@ you do it with computer control if they agree.
 | `spawn node ENOENT` / server failed to start | Run the installer again (it writes the full path to Node). |
 | Plugins → Development missing | They're in browser Figma → use the desktop app. |
 | Folder moved | Run the installer again. |
+| `File not found on the user's computer` when importing | The HTML is in your sandbox, not on their PC → send the code with `html` (+ `files`), or `upload_file_for_import` in parts for long pages. |
 | Port 3055 used by another program | Set env `HTML_TO_FIGMA_PORT` for the server and the same port in plugin Options → MCP bridge port. |
 | Remove it | `node mcp-server/html-to-figma-mcp.mjs remove`; in Figma, Plugins → Development → Manage plugins in development → remove it. |
 

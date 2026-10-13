@@ -101,6 +101,38 @@ with sync_playwright() as p:
 
     res2, _ = rpc('tools/call', {'name': 'import_html_to_figma', 'arguments': {'html': open(os.path.join(HERE, 'pages', 'poster', 'index.html')).read(), 'devices': ['canvas'], 'preview': False}}, pump=pump)
     print('canvas from html ->', text_of(res2).splitlines()[1])
+
+    # --- HTML sent as code (the AI's files are not on this computer) ---
+    site = os.path.join(HERE, 'pages', 'site')
+    def layers(t): return t.split('layers created')[0].split('\n')[-1].strip()
+    path_layers = layers(text_of(res))
+    tools_now = [t['name'] for t in rpc('tools/list')[0]['result']['tools']]
+    print('upload tool listed ->', 'upload_file_for_import' in tools_now)
+    html = open(os.path.join(site, 'index.html')).read()
+    up_id = None
+    for i in range(0, len(html), 1000):  # long HTML in parts
+        a = {'file_name': 'index.html', 'content': html[i:i + 1000], 'append': i > 0}
+        if up_id: a['upload_id'] = up_id
+        r, _ = rpc('tools/call', {'name': 'upload_file_for_import', 'arguments': a})
+        up_id = text_of(r).split('upload_id: ')[1].split()[0]
+    rpc('tools/call', {'name': 'upload_file_for_import', 'arguments': {'upload_id': up_id, 'file_name': 'css/style.css', 'content': open(os.path.join(site, 'css', 'style.css')).read()}})
+    assets = {}
+    for f in os.listdir(os.path.join(site, 'img')):
+        raw = open(os.path.join(site, 'img', f), 'rb').read()
+        if f.endswith('.svg'): assets['img/' + f] = raw.decode()
+        else:
+            assets['img/' + f] = 'data:image/' + {'jpg': 'jpeg'}.get(f.rsplit('.', 1)[1], f.rsplit('.', 1)[1]) + ';base64,' + base64.b64encode(raw).decode()
+        rpc('tools/call', {'name': 'upload_file_for_import', 'arguments': {'upload_id': up_id, 'file_name': 'img/' + f,
+            'content': base64.b64encode(raw).decode(), 'encoding': 'base64'}})
+    r, _ = rpc('tools/call', {'name': 'import_html_to_figma', 'arguments': {'upload_id': up_id, 'devices': ['desktop', 'mobile'], 'preview': False}}, pump=pump)
+    print('upload import ->', r['result'].get('isError', False), '|', text_of(r).splitlines()[0])
+    print('upload layers match path import ->', layers(text_of(r)) == path_layers, layers(text_of(r)), path_layers)
+    assets['css/style.css'] = open(os.path.join(site, 'css', 'style.css')).read()
+    r, _ = rpc('tools/call', {'name': 'import_html_to_figma', 'arguments': {'html': html, 'files': assets, 'devices': ['desktop', 'mobile'], 'preview': False}}, pump=pump)
+    print('html+files import ->', r['result'].get('isError', False), '|', text_of(r).splitlines()[0])
+    print('html+files layers match path import ->', layers(text_of(r)) == path_layers)
+    r, _ = rpc('tools/call', {'name': 'import_html_to_figma', 'arguments': {'path': '/home/sandbox/not-here/page.html'}})
+    print('missing path hint ->', 'upload_file_for_import' in text_of(r))
     print('mock problems ->', pg.evaluate('window.__problems'), pg.evaluate('window.__crash'), '| page errors ->', errs)
     fr = pg.frame_locator('#ui')
     print('header version ->', fr.locator('#ver').inner_text(), '| pill ->', fr.locator('#bridgePill').inner_text())

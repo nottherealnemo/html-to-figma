@@ -4,6 +4,14 @@ The version shows in the plugin window's title bar and next to "HTML → Figma" 
 The plugin and the MCP server always share a version number; if they don't match, the plugin's
 header pill says **Update MCP server**.
 
+## 1.7.0 — 2026-10-13
+AI apps no longer need the HTML saved on your computer.
+- **Send HTML code directly.** `import_html_to_figma` takes the code in `html`, plus the images and CSS it uses in
+  `files`, so an AI working in its own sandbox or a cloud workspace can import what it wrote.
+- **Long pages in parts:** new `upload_file_for_import` tool sends big HTML (and its assets) piece by piece, then
+  `import_html_to_figma({upload_id})` imports it, with the same result as importing the file from disk.
+- If an AI passes a `path` that isn't on your computer, the error now tells it to send the code instead.
+
 ## 1.6.1 — 2026-10-12
 Found in the first live test inside Figma:
 - Two items pushed to opposite edges (label left, value right via `margin-left: auto`) now use

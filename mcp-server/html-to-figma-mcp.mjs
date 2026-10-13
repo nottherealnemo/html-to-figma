@@ -30,7 +30,7 @@ import readline from 'node:readline';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const VERSION = '1.6.1'; // keep in step with PLUGIN_VERSION in code.js
+const VERSION = '1.7.0'; // keep in step with PLUGIN_VERSION in code.js
 const PORT = parseInt(process.env.HTML_TO_FIGMA_PORT || '3055', 10);
 const TIMEOUT_MS = parseInt(process.env.HTML_TO_FIGMA_TIMEOUT_MS || '180000', 10);
 const MAX_ASSET_BYTES = 60 * 1024 * 1024;
@@ -374,17 +374,26 @@ const TOOLS = [
     description:
       'Render an HTML page and rebuild it as editable Figma layers (frames, text, images, vectors, Auto Layout) in the ' +
       'Figma file the user has open. Use this when the user wants a web page, HTML mockup, email template, or HTML you ' +
-      'generated turned into a Figma design. Provide exactly one of: `path` (absolute path to a local .html file; ' +
-      'images, CSS and fonts it references are included automatically), `html` (a complete HTML document as a string), ' +
-      'or `url` (an http(s) page). Choose `devices` for the frames to create: desktop/tablet/mobile lay the page out at ' +
+      'generated turned into a Figma design. Provide exactly one source: `html` (the HTML code itself as a string, ' +
+      'optionally with `files` for images/CSS it references by relative path), `upload_id` (HTML sent in parts with ' +
+      'upload_file_for_import; use this when the code is too long for one call, roughly over 40 KB), `path` (an ' +
+      'absolute path to an .html file ON THE USER\'S COMPUTER, where Figma runs; its images, CSS and fonts are included ' +
+      'automatically), or `url` (an http(s) page). If the HTML is in your own workspace or sandbox rather than on the ' +
+      'user\'s computer, `path` will not find it: send the code with `html` or upload_file_for_import instead. Choose `devices` for the frames to create: desktop/tablet/mobile lay the page out at ' +
       'that screen size; canvas sizes the frame to the content itself (best for posters, cards, slides, social images). ' +
       'Requires the "HTML to Figma Importer" plugin to be open in Figma desktop; call figma_bridge_status first if unsure. ' +
       'Returns the created frame names, node IDs and sizes, plus PNG previews of the result.',
     inputSchema: {
       type: 'object',
       properties: {
-        path: { type: 'string', description: 'Absolute path to a local .html/.htm file.' },
-        html: { type: 'string', description: 'A complete HTML document. Inline CSS or use absolute URLs for assets (or set base_url).' },
+        html: { type: 'string', description: 'The HTML code to import (a complete document or a fragment). CSS can be inline; images can be data: URIs, absolute URLs, or relative paths supplied in `files`.' },
+        files: {
+          type: 'object', additionalProperties: { type: 'string' },
+          description: 'Only with `html`: extra files the HTML references by relative path, e.g. {"style.css": "body{…}", "img/logo.png": "data:image/png;base64,…"}. Text files as plain text; binary files as data: URIs.',
+        },
+        upload_id: { type: 'string', description: 'Import files sent earlier with upload_file_for_import.' },
+        entry: { type: 'string', description: 'With `upload_id`: which uploaded .html file to import. Default index.html, or the only HTML file.' },
+        path: { type: 'string', description: 'Absolute path to an .html/.htm file on the user\'s computer (the one running Figma). Not for files in your own sandbox.' },
         url: { type: 'string', description: 'An http(s) URL to fetch and import. Relative assets load from that site.' },
         devices: { type: 'array', items: { type: 'string', enum: DEVICE_ENUM }, minItems: 1, uniqueItems: true, description: 'Frames to create, one per device. Default ["desktop"].' },
         auto_layout: { type: 'string', enum: ['flex', 'all', 'off'], description: 'flex (default): flexbox & grid containers become Auto Layout. all: also stacked block containers. off: absolute positions only.' },
@@ -405,6 +414,29 @@ const TOOLS = [
       additionalProperties: false,
     },
     annotations: { title: 'Import HTML into Figma', readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
+  },
+  {
+    name: 'upload_file_for_import',
+    title: 'Upload HTML (or an asset) for import',
+    description:
+      'Send HTML code, or an image/CSS/font file it uses, to the Figma bridge in one or more parts, then import it with ' +
+      'import_html_to_figma({upload_id}). Use this when the HTML is too long to pass in a single call (roughly over 40 KB) ' +
+      'or comes with separate asset files. Send long files in consecutive parts of up to ~40 KB with `append: true` on ' +
+      'every part after the first. The first call returns an upload_id; pass it to every later call. ' +
+      'Text files as plain text; binary files (images, fonts) with encoding "base64" or as a data: URI.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        content: { type: 'string', description: 'The file content, or the next part of it.' },
+        file_name: { type: 'string', description: 'Relative name as the HTML refers to it, e.g. "index.html", "css/site.css", "img/hero.jpg". Default "index.html".' },
+        encoding: { type: 'string', enum: ['text', 'base64'], description: 'text (default) or base64 for binary files. data: URIs are decoded automatically.' },
+        append: { type: 'boolean', description: 'Add this part to the end of the file instead of replacing it. Default false.' },
+        upload_id: { type: 'string', description: 'The upload to add to (returned by the first call). Omit to start a new upload.' },
+      },
+      required: ['content'],
+      additionalProperties: false,
+    },
+    annotations: { title: 'Upload HTML for import', readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
   },
   {
     name: 'figma_bridge_status',
@@ -672,9 +704,71 @@ async function runCli(cmd, argv) {
   process.stdout.write('Commands: setup, remove, config <app>, status, version. Without a command it runs as an MCP server.\n');
 }
 
+/* Uploads: HTML and assets sent by the AI in parts (kept in memory for a while). */
+const uploads = new Map(); // id -> { files: Map(name -> Buffer), bytes, touched }
+const UPLOAD_TTL_MS = 2 * 60 * 60 * 1000;
+const MAX_UPLOAD_BYTES = 60 * 1024 * 1024;
+
+function cleanName(n) {
+  const name = String(n || 'index.html').replace(/\\/g, '/').replace(/^(\.\/|\/)+/, '').trim();
+  if (!name || name.split('/').some((seg) => seg === '..' || seg === '')) throw new ToolError(`Invalid file_name "${n}". Use a relative path like "index.html" or "img/logo.png".`);
+  return name;
+}
+
+function decodeContent(content, encoding) {
+  const m = /^data:([^,]*?)(;base64)?,/i.exec(content);
+  if (m) {
+    const body = content.slice(m[0].length);
+    return m[2] ? Buffer.from(body, 'base64') : Buffer.from(decodeURIComponent(body), 'utf8');
+  }
+  return encoding === 'base64' ? Buffer.from(content.replace(/\s+/g, ''), 'base64') : Buffer.from(content, 'utf8');
+}
+
+function sweepUploads() {
+  for (const [id, u] of uploads) if (Date.now() - u.touched > UPLOAD_TTL_MS) uploads.delete(id);
+}
+
+const kb = (n) => `${n < 10240 ? (n / 1024).toFixed(1) : Math.round(n / 1024)} KB`;
+
+function toolUpload(args) {
+  sweepUploads();
+  if (typeof args.content !== 'string') throw new ToolError('`content` is required.');
+  let id = args.upload_id, up = id && uploads.get(id);
+  if (id && !up) throw new ToolError(`Upload "${id}" not found (it expires after 2 hours, or the AI app restarted). Start again without upload_id.`);
+  if (!up) {
+    id = 'up_' + crypto.randomBytes(6).toString('hex');
+    up = { files: new Map(), bytes: 0, touched: Date.now() };
+    uploads.set(id, up);
+  }
+  const name = cleanName(args.file_name);
+  const data = decodeContent(args.content, args.encoding);
+  const prev = up.files.get(name);
+  const next = args.append && prev ? Buffer.concat([prev, data]) : data;
+  const bytes = up.bytes - (prev ? prev.length : 0) + next.length;
+  if (bytes > MAX_UPLOAD_BYTES) throw new ToolError(`Upload too large (over ${MAX_UPLOAD_BYTES / 1048576} MB).`);
+  up.files.set(name, next); up.bytes = bytes; up.touched = Date.now();
+  const list = [...up.files].map(([n, b]) => `${n} (${kb(b.length)})`).join(', ');
+  return { content: [{ type: 'text', text:
+    `upload_id: ${id}\nFiles so far: ${list}.\n` +
+    `Send more parts with upload_file_for_import({upload_id: "${id}", file_name, content, append: true}), ` +
+    `or import with import_html_to_figma({upload_id: "${id}"}).` }] };
+}
+
+function pickEntry(names, wanted) {
+  if (wanted) {
+    const w = cleanName(wanted);
+    if (!names.includes(w)) throw new ToolError(`No uploaded file named "${w}". Uploaded: ${names.join(', ')}.`);
+    return w;
+  }
+  const htmls = names.filter((n) => /\.html?$/i.test(n));
+  if (!htmls.length) throw new ToolError(`No .html file in this upload (got ${names.join(', ')}). Upload the page as "index.html".`);
+  return htmls.find((n) => /(^|\/)index\.html?$/i.test(n)) || htmls[0];
+}
+
 async function toolImport(args, progress) {
-  const sources = ['path', 'html', 'url'].filter((k) => typeof args[k] === 'string' && args[k].trim());
-  if (sources.length !== 1) throw new ToolError('Provide exactly one of `path`, `html` or `url`.');
+  const sources = ['path', 'html', 'url', 'upload_id'].filter((k) => typeof args[k] === 'string' && args[k].trim());
+  if (sources.length !== 1) throw new ToolError('Provide exactly one of `html`, `upload_id`, `path` or `url`.');
+  if (args.files && sources[0] !== 'html') throw new ToolError('`files` can only be used together with `html`.');
   const payload = {
     options: {
       devices: args.devices && args.devices.length ? args.devices : ['desktop'],
@@ -694,7 +788,10 @@ async function toolImport(args, progress) {
   if (sources[0] === 'path') {
     const p = path.resolve(args.path.replace(/^~(?=$|\/)/, process.env.HOME || ''));
     if (!/\.html?$/i.test(p)) throw new ToolError(`\`path\` must point to an .html or .htm file (got ${p}).`);
-    if (!fs.existsSync(p)) throw new ToolError(`File not found: ${p}`);
+    if (!fs.existsSync(p)) throw new ToolError(`File not found on the user's computer: ${p}. ` +
+      '`path` only works for files on the computer running Figma. If the HTML is in your own workspace or sandbox, ' +
+      'send the code itself instead: import_html_to_figma({html}) for short pages, or upload_file_for_import in parts ' +
+      'for long ones (plus any images/CSS it uses), then import_html_to_figma({upload_id}).');
     const bundle = collectFiles(p);
     payload.files = bundle.files; payload.entry = bundle.entry;
     payload.options.name = args.name || path.basename(p).replace(/\.html?$/i, '');
@@ -710,10 +807,33 @@ async function toolImport(args, progress) {
     payload.options.baseUrl = args.base_url || res.url || u.href;
     payload.options.name = args.name || u.hostname;
     sourceText = u.href;
+  } else if (sources[0] === 'upload_id') {
+    sweepUploads();
+    const up = uploads.get(args.upload_id);
+    if (!up) throw new ToolError(`Upload "${args.upload_id}" not found (it expires after 2 hours, or the AI app restarted). Upload the files again.`);
+    up.touched = Date.now();
+    const entry = pickEntry([...up.files.keys()], args.entry);
+    payload.files = {};
+    for (const [n, b] of up.files) payload.files[n] = b.toString('base64');
+    payload.entry = entry;
+    payload.options.name = args.name || entry.split('/').pop().replace(/\.html?$/i, '');
+    sourceText = `uploaded ${entry} (${up.files.size} file${up.files.size > 1 ? 's' : ''}, ${kb(up.bytes)})`;
+  } else if (args.files && Object.keys(args.files).length) {
+    payload.files = { 'index.html': Buffer.from(args.html, 'utf8').toString('base64') };
+    for (const [n, c] of Object.entries(args.files)) {
+      if (typeof c !== 'string') throw new ToolError(`files["${n}"] must be a string.`);
+      payload.files[cleanName(n)] = decodeContent(c, 'text').toString('base64');
+    }
+    payload.entry = 'index.html';
+    payload.options.name = args.name || 'HTML';
+    sourceText = `HTML code with ${Object.keys(args.files).length} asset file(s)`;
   } else {
+    if (!/[<>]/.test(args.html) && /\.html?$/i.test(args.html.trim())) {
+      throw new ToolError('`html` looks like a file name, not HTML code. Pass the file\'s contents in `html`, or its path on the user\'s computer in `path`.');
+    }
     payload.html = args.html;
     payload.options.name = args.name || 'HTML';
-    sourceText = 'inline HTML';
+    sourceText = 'HTML code';
   }
 
   if (!(await waitForPlugin(3000))) throw new ToolError(notConnectedText());
@@ -770,6 +890,7 @@ async function handle(msg) {
         try {
           let result;
           if (name === 'import_html_to_figma') result = await toolImport(args, progress);
+          else if (name === 'upload_file_for_import') result = toolUpload(args);
           else if (name === 'figma_bridge_status') result = await toolStatus();
           else return replyError(id, -32602, `Unknown tool: ${name}`);
           return reply(id, result);

@@ -112,6 +112,15 @@ VS Code "MCP: Open User Configuration" (key `servers`, add `"type": "stdio"`) ·
 `~/.codex/config.toml` (`[mcp_servers.html-to-figma]`) · LM Studio: Program tab → Install → Edit mcp.json.
 Browser-only chat apps can't run local tools; they need a desktop app.
 
+### Sending HTML to Figma (once connected)
+- **Have the HTML code?** Send it directly: `import_html_to_figma({html: "<!doctype html>…"})`. Images and CSS
+  it uses by relative path go in `files` (text as text, images as `data:` URIs). No file on their computer is needed.
+- **Long page (over ~40 KB)?** Send it in parts with `upload_file_for_import` (`append: true` after the first part,
+  same `upload_id` each time; images/CSS as extra files), then `import_html_to_figma({upload_id})`.
+- **`path` is only for files on their computer** (where Figma runs). A file in your own sandbox or workspace
+  isn't there: send its contents instead.
+- **Hosted page?** `url` is the cheapest: nothing has to pass through the conversation.
+
 ### Troubleshooting map
 | Symptom | Cause → fix |
 |---|---|
@@ -121,5 +130,6 @@ Browser-only chat apps can't run local tools; they need a desktop app.
 | Port 3055 busy (non-HTML-to-Figma program) | Set `HTML_TO_FIGMA_PORT` in the app's server env and the same port in plugin Options → MCP bridge port. |
 | Several AI apps connected | Fine. They share one connection automatically. |
 | Folder was moved | Re-run the installer. |
+| `File not found on the user's computer` | The HTML is in the AI's sandbox, not on their PC → send it with `html` or `upload_file_for_import`. |
 
 Version: see `CHANGELOG.md` (the plugin shows its version next to its title).

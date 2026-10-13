@@ -63,7 +63,8 @@ Figma while the AI works; the header badge says **AI connected** when ready.
 
 | Tool | What it does |
 |---|---|
-| `import_html_to_figma` | Imports from a local file `path` (its images/CSS/fonts are bundled automatically), an `html` string, or a `url`. Accepts `devices` (desktop / tablet / mobile / canvas), `auto_layout`, `crop_to_screen`, `screen_sizes`, `text_layers`, `run_scripts`, `wait_ms` and more. Returns frame names, node IDs, sizes and PNG previews, so the AI can check the result. |
+| `import_html_to_figma` | Imports HTML code sent directly (`html`, with optional `files` for its images/CSS), an `upload_id`, a file `path` on the computer running Figma (its images/CSS/fonts are bundled automatically), or a `url`. Accepts `devices` (desktop / tablet / mobile / canvas), `auto_layout`, `crop_to_screen`, `screen_sizes`, `text_layers`, `run_scripts`, `wait_ms` and more. Returns frame names, node IDs, sizes and PNG previews, so the AI can check the result. |
+| `upload_file_for_import` | Sends long HTML in parts, plus its images/CSS/fonts, so AI apps whose files aren't on your computer (cloud sandboxes, web workspaces) can still import them. |
 | `figma_bridge_status` | Says whether the plugin is connected and which Figma file/page imports will land in. |
 
 Notes:
